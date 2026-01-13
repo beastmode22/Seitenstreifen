@@ -1,0 +1,109 @@
+/* Grund-Setup */
+body {
+    font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    background-color: #f9f9f9;
+    margin: 0;
+    padding: 16px; /* slightly smaller padding for mobile */
+    display: block; /* mobile-first: flow layout */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* mobile-first container: full width, centered content with max-width for readability */
+#app-container {
+    width: 100%;
+    max-width: 420px; /* mobile-first readable width */
+    margin: 0 auto;
+    box-sizing: border-box;
+}
+
+h1 {
+    text-align: center;
+    font-weight: 400;
+    font-size: 1.6rem; /* a touch smaller on very small screens */
+    margin-bottom: 8px;
+}
+
+.category-title {
+    color: #666;
+    font-weight: 400;
+    font-size: 1.5rem;
+    margin-bottom: 15px;
+}
+
+/* Die Karten aus deinem Entwurf */
+.card {
+    background: white;
+    border: 1px solid #e0e0e0;
+    padding: 16px;
+    margin-bottom: 14px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    border-radius: 8px;
+    transition: transform 160ms ease, box-shadow 160ms ease;
+}
+
+.company-name {
+    margin: 0 0 12px 0;
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+.card-details {
+    display: flex;
+    flex-direction: column; /* stacked on mobile */
+    gap: 8px;
+    justify-content: flex-start;
+}
+
+.detail-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.label {
+    font-size: 0.82rem;
+    color: #666;
+}
+
+.value {
+    font-size: 1rem;
+    font-weight: 500;
+}
+
+/* keep align-right class but default to left on mobile for readability */
+.align-right {
+    text-align: left;
+}
+
+/* Larger screens: center layout and switch card details to horizontal */
+@media (min-width: 600px) {
+    body {
+        padding: 20px;
+    }
+
+    #app-container {
+        max-width: 720px; /* wider layout on tablets/desktops */
+    }
+
+    h1 {
+        font-size: 1.8rem;
+    }
+
+    .card {
+        padding: 18px;
+    }
+
+    .card-details {
+        flex-direction: row;
+        align-items: center;
+    }
+
+    .align-right {
+        text-align: right;
+    }
+
+    .card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 6px 18px rgba(0,0,0,0.06);
+    }
+}
