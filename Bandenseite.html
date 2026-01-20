@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bandenwerbung Manager 🏟️</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .nav-link {
+            position: relative;
+            padding: 0.5rem 1rem;
+            color: #6b7280;
+            font-weight: 500;
+            transition: color 0.3s ease;
+            text-decoration: none;
+        }
+        
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #3b82f6, #1e40af);
+            transition: width 0.3s ease;
+        }
+        
+        .nav-link:hover {
+            color: #1f2937;
+        }
+        
+        .nav-link:hover::after {
+            width: 100%;
+        }
+        
+        .nav-link.active {
+            color: #1e40af;
+        }
+        
+        .nav-link.active::after {
+            width: 100%;
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-gray-50 to-gray-100 min-h-screen">
+
+    <!-- Navigation Bar -->
+    <nav class="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-200/50 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center gap-12">
+                    <a href="Bandenseite.html" class="flex items-center gap-2 font-bold text-xl text-gray-900 hover:text-blue-600 transition-colors">
+                        <span class="text-2xl">🏟️</span>
+                        <span class="hidden sm:inline">Manager</span>
+                    </a>
+                    <div class="hidden sm:flex gap-2">
+                        <a href="Bandenseite.html" class="nav-link active">Bandenpläne</a>
+                        <a href="Verein.html" class="nav-link">Verträge</a>
+                    </div>
+                </div>
+                <div class="sm:hidden">
+                    <select onchange="window.location.href = this.value" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-700 bg-white border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="Bandenseite.html" selected>Bandenpläne</option>
+                        <option value="Verein.html">Verträge</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div id="app-container" class="max-w-7xl mx-auto py-6 px-4 sm:py-8 sm:px-6">
+        
+        <!-- Header mit Setup -->
+        <div class="mb-8 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <div>
+                <h1 class="text-3xl sm:text-4xl font-bold text-gray-900 mb-2">Stadion-Bandenplan</h1>
+                <p class="text-gray-600 text-sm sm:text-base">Verwaltung und Übersicht der Bandenpositionen</p>
+            </div>
+            <div class="flex gap-2 flex-wrap">
+                <button id="viewToggle" class="px-4 py-2 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 transition-colors text-sm sm:text-base">
+                    🏟️ Stadionansicht
+                </button>
+                <button id="statsToggle" class="px-4 py-2 bg-gray-600 text-white rounded-lg font-medium hover:bg-gray-700 transition-colors text-sm sm:text-base flex items-center gap-2">
+                    <span>📊 Übersicht</span>
+                    <svg id="statsIcon" class="w-5 h-5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path></svg>
+                </button>
+            </div>
+        </div>
+
+        <!-- Stats Cards (Collapsible) -->
+        <div id="statsContainer" class="hidden mb-8">
+            <div class="grid grid-cols-2 sm:grid-cols-5 gap-3">
+            <div class="bg-white rounded-lg p-3 sm:p-4 border border-gray-200 shadow-sm">
+                <p class="text-xs text-gray-500 font-semibold uppercase tracking-wide mb-1">Nord</p>
+                <p class="text-xl sm:text-2xl font-bold text-blue-600" id="stats-nord">0</p>
+                <p class="text-xs text-gray-400 mt-1">Plätze</p>
+            </div>
+            <div class="bg-white rounded-lg p-3 sm:p-4 border border-gray-200 shadow-sm">
+                <p class="text-xs text-gray-500 font-semibold uppercase tracking-wide mb-1">Ost</p>
+                <p class="text-xl sm:text-2xl font-bold text-purple-600" id="stats-ost">0</p>
+                <p class="text-xs text-gray-400 mt-1">Plätze</p>
+            </div>
+            <div class="bg-white rounded-lg p-3 sm:p-4 border border-gray-200 shadow-sm">
+                <p class="text-xs text-gray-500 font-semibold uppercase tracking-wide mb-1">Süd</p>
+                <p class="text-xl sm:text-2xl font-bold text-green-600" id="stats-sued">0</p>
+                <p class="text-xs text-gray-400 mt-1">Plätze</p>
+            </div>
+            <div class="bg-white rounded-lg p-3 sm:p-4 border border-gray-200 shadow-sm">
+                <p class="text-xs text-gray-500 font-semibold uppercase tracking-wide mb-1">West</p>
+                <p class="text-xl sm:text-2xl font-bold text-yellow-600" id="stats-west">0</p>
+                <p class="text-xs text-gray-400 mt-1">Plätze</p>
+            </div>
+            <div class="bg-white rounded-lg p-3 sm:p-4 border border-gray-200 shadow-sm">
+                <p class="text-xs text-gray-500 font-semibold uppercase tracking-wide mb-1">Status</p>
+                <p class="text-xl sm:text-2xl font-bold text-orange-600" id="stats-frei">0</p>
+                <p class="text-xs text-gray-400 mt-1">Frei</p>
+            </div>
+            </div>
+            <div class="mt-6 pt-6 border-t border-gray-200 flex justify-end">
+                <button id="setupBtn" class="px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors text-sm sm:text-base">
+                    ⚙️ Konfigurieren
+                </button>
+            </div>
+        </div>
+
+        <!-- Bandenplan Section -->
+        <section class="mb-8">
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-4 sm:p-6 md:p-8">
+                
+                <!-- Legend -->
+                <div class="flex flex-wrap gap-6 sm:gap-8 mb-8 pb-8 border-b border-gray-100">
+                    <div class="flex items-center gap-3">
+                        <div class="w-4 h-4 bg-red-500 rounded-md shadow-sm"></div>
+                        <div>
+                            <p class="text-xs text-gray-500 font-semibold uppercase tracking-wide">Belegt</p>
+                            <p class="text-sm text-gray-700 font-medium">Vertragsplatz</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <div class="w-4 h-4 bg-blue-500 rounded-md shadow-sm"></div>
+                        <div>
+                            <p class="text-xs text-gray-500 font-semibold uppercase tracking-wide">Frei</p>
+                            <p class="text-sm text-gray-700 font-medium">Verfügbar</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Stadium View -->
+                <div id="stadium-container" class="hidden mb-8">
+                </div>
+
+                <!-- Grid View -->
+                <div id="grid-view">
+                    <!-- Nordseite -->
+                    <div class="mb-8">
+                        <h3 class="text-lg sm:text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+                            <span class="text-blue-600">↑</span> Nordseite
+                        </h3>
+                        <div id="banden-nord" class="grid grid-cols-5 sm:grid-cols-6 md:grid-cols-10 gap-2 sm:gap-3">
+                        </div>
+                    </div>
+
+                    <!-- Ostseite -->
+                    <div class="mb-8">
+                        <h3 class="text-lg sm:text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+                            <span class="text-purple-600">→</span> Ostseite
+                        </h3>
+                        <div id="banden-ost" class="grid grid-cols-5 sm:grid-cols-6 md:grid-cols-10 gap-2 sm:gap-3">
+                        </div>
+                    </div>
+
+                    <!-- Südseite -->
+                    <div class="mb-8">
+                        <h3 class="text-lg sm:text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+                            <span class="text-green-600">↓</span> Südseite
+                        </h3>
+                        <div id="banden-sued" class="grid grid-cols-5 sm:grid-cols-6 md:grid-cols-10 gap-2 sm:gap-3">
+                        </div>
+                    </div>
+
+                    <!-- Westseite -->
+                    <div>
+                        <h3 class="text-lg sm:text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+                            <span class="text-yellow-600">←</span> Westseite
+                        </h3>
+                        <div id="banden-west" class="grid grid-cols-5 sm:grid-cols-6 md:grid-cols-10 gap-2 sm:gap-3">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Setup Modal -->
+    <div id="setupModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+        <div class="bg-white rounded-2xl max-w-md w-full shadow-2xl">
+            <div class="p-6 border-b border-gray-100 flex justify-between items-center">
+                <h3 class="text-xl font-bold">Bandenseiten konfigurieren</h3>
+                <button onclick="closeSetupModal()" class="text-gray-400 hover:text-gray-600 text-2xl">&times;</button>
+            </div>
+            <div class="p-6 space-y-6">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Nordseite - Anzahl Plätze</label>
+                    <input type="number" id="input-nord" min="0" max="20" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Ostseite - Anzahl Plätze</label>
+                    <input type="number" id="input-ost" min="0" max="20" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Südseite - Anzahl Plätze</label>
+                    <input type="number" id="input-sued" min="0" max="20" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Westseite - Anzahl Plätze</label>
+                    <input type="number" id="input-west" min="0" max="20" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+            </div>
+            <div class="p-6 bg-gray-50 rounded-b-2xl flex gap-3">
+                <button onclick="closeSetupModal()" class="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition-colors">Abbrechen</button>
+                <button onclick="saveSetup()" class="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors">Speichern</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Price Modal -->
+    <div id="priceModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+        <div class="bg-white rounded-2xl max-w-sm w-full shadow-2xl">
+            <div class="p-6 border-b border-gray-100 flex justify-between items-center">
+                <h3 class="text-xl font-bold">Preis festlegen</h3>
+                <button onclick="closePriceModal()" class="text-gray-400 hover:text-gray-600 text-2xl">&times;</button>
+            </div>
+            <div class="p-6 space-y-4">
+                <div>
+                    <p class="text-sm text-gray-600 mb-2">Platz: <span id="price-platz-name" class="font-bold text-gray-900"></span></p>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Preis pro Saison (€)</label>
+                    <input type="number" id="input-price" min="0" step="50" placeholder="0" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+            </div>
+            <div class="p-6 bg-gray-50 rounded-b-2xl flex gap-3">
+                <button onclick="closePriceModal()" class="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition-colors">Abbrechen</button>
+                <button onclick="savePrice()" class="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors">Speichern</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Detail Modal -->
+    <div id="detailModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+        <div class="bg-white rounded-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto shadow-2xl">
+            <div class="p-6 border-b border-gray-100 flex justify-between items-center sticky top-0 bg-white">
+                <h3 id="modal-name" class="text-xl font-bold">Vertragsdetails</h3>
+                <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600 text-2xl">&times;</button>
+            </div>
+            <div class="p-6 space-y-6">
+                <div class="flex justify-between items-center">
+                    <span id="modal-status-badge"></span>
+                    <p id="modal-status" class="text-sm text-gray-500"></p>
+                </div>
+                <div>
+                    <p class="text-xs text-gray-400 uppercase font-bold tracking-wider">Betrag</p>
+                    <p id="modal-betrag" class="text-3xl font-bold text-blue-600"></p>
+                </div>
+                <div>
+                    <p class="text-xs text-gray-400 uppercase font-bold tracking-wider">Laufzeit bis</p>
+                    <p id="modal-laufzeit" class="text-lg font-semibold"></p>
+                </div>
+                <div id="modal-details" class="pt-4 border-t border-gray-100">
+                </div>
+            </div>
+            <div class="p-6 bg-gray-50 rounded-b-2xl">
+                <button onclick="closeModal()" class="w-full bg-gray-900 text-white py-3 rounded-xl font-bold hover:bg-gray-800 transition-colors">Schließen</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="bandenseiteScript.js"></script>
+</body>
+</html>
