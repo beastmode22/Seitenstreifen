@@ -13,8 +13,15 @@ let bandenConfig = {
     sued: 10,
     west: 15
 };
-let currentView = 'grid'; // 'grid' oder 'stadium'
+let seitenPreise = {
+    nord: null,
+    ost: null,
+    sued: null,
+    west: null
+};
+let currentView = 'stadium'; // 'grid' oder 'stadium'
 let zoomedSide = null; // 'nord', 'ost', 'sued', 'west' oder null
+let currentEditSeite = null;
 
 // Initialisiere Bandenplätze basierend auf Config
 function initBandenPlaetze() {
@@ -59,8 +66,10 @@ function renderGridView() {
     // Grid-View anzeigen, Stadium-View verstecken
     const gridView = document.getElementById('grid-view');
     const stadiumContainer = document.getElementById('stadium-container');
+    const legend = document.getElementById('legend-container');
     if (gridView) gridView.classList.remove('hidden');
     if (stadiumContainer) stadiumContainer.classList.add('hidden');
+    if (legend) legend.classList.add('hidden');
 
     const containers = {
         nord: document.getElementById('banden-nord'),
@@ -76,32 +85,33 @@ function renderGridView() {
 
     bandenPlaetze.forEach(platz => {
         const isBelegt = platz.vertragId !== null;
-        const vertrag = isBelegt ? vertraege.find(v => v.id === platz.vertragId) : null;
+        
+        // Nur belegte Banden anzeigen
+        if (!isBelegt) return;
+        
+        const vertrag = vertraege.find(v => v.id === platz.vertragId);
         const container = containers[platz.position];
         
         if (!container) return;
 
         const btn = document.createElement('button');
         btn.className = `
-            text-[8px] sm:text-xs font-bold py-2 px-1 sm:px-2 rounded transition-all transform hover:scale-105
-            w-full h-12 sm:h-14 flex flex-col items-center justify-center
-            ${isBelegt 
-                ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-sm border border-blue-700' 
-                : 'bg-white hover:bg-orange-50 text-orange-600 border-2 border-dashed border-orange-400'}
+            group relative text-xs sm:text-sm font-bold rounded-lg transition-all transform hover:scale-105
+            h-16 sm:h-20 flex flex-col items-center justify-center gap-1 px-2 sm:px-3
+            bg-gradient-to-br from-blue-500 to-blue-700 hover:from-blue-600 hover:to-blue-800
+            text-white shadow-md hover:shadow-lg border border-blue-400
+            cursor-pointer overflow-hidden
         `;
 
-        btn.innerHTML = isBelegt 
-            ? `<span class="block text-center line-clamp-2">${vertrag.name.substring(0, 8)}</span>` 
-            : `<span>${platz.preis ? platz.preis + '€' : '+'}</span>`;
+        btn.innerHTML = `
+            <span class="block text-center font-bold line-clamp-2 text-[11px] sm:text-xs">${vertrag.name}</span>
+            <span class="text-[10px] opacity-90 font-medium">${vertrag.betrag}€</span>
+        `;
 
-        btn.title = isBelegt ? vertrag.name : (platz.preis ? `${platz.preis}€` : 'Klick um Preis zu setzen');
+        btn.title = vertrag.name;
 
         btn.onclick = () => {
-            if (isBelegt) {
-                openModal(platz.vertragId);
-            } else {
-                openPriceModal(platz);
-            }
+            openModal(platz.vertragId);
         };
 
         container.appendChild(btn);
@@ -114,8 +124,10 @@ function renderStadiumView() {
     // Stadium-View anzeigen, Grid-View verstecken
     const gridView = document.getElementById('grid-view');
     const stadiumContainer = document.getElementById('stadium-container');
+    const legend = document.getElementById('legend-container');
     if (gridView) gridView.classList.add('hidden');
     if (stadiumContainer) stadiumContainer.classList.remove('hidden');
+    if (legend) legend.classList.remove('hidden');
     
     if (!stadiumContainer) return;
     
@@ -488,6 +500,10 @@ function openSetupModal() {
     document.getElementById('input-ost').value = bandenConfig.ost;
     document.getElementById('input-sued').value = bandenConfig.sued;
     document.getElementById('input-west').value = bandenConfig.west;
+    document.getElementById('price-nord').value = seitenPreise.nord || '';
+    document.getElementById('price-ost').value = seitenPreise.ost || '';
+    document.getElementById('price-sued').value = seitenPreise.sued || '';
+    document.getElementById('price-west').value = seitenPreise.west || '';
     document.getElementById('setupModal').classList.remove('hidden');
 }
 
@@ -500,33 +516,28 @@ function saveSetup() {
     bandenConfig.ost = parseInt(document.getElementById('input-ost').value) || 0;
     bandenConfig.sued = parseInt(document.getElementById('input-sued').value) || 0;
     bandenConfig.west = parseInt(document.getElementById('input-west').value) || 0;
+    seitenPreise.nord = parseInt(document.getElementById('price-nord').value) || null;
+    seitenPreise.ost = parseInt(document.getElementById('price-ost').value) || null;
+    seitenPreise.sued = parseInt(document.getElementById('price-sued').value) || null;
+    seitenPreise.west = parseInt(document.getElementById('price-west').value) || null;
     
     initBandenPlaetze();
     renderBandenplan();
     closeSetupModal();
 }
 
-// Price Modal Funktionen
-function openPriceModal(platz) {
-    currentEditPlatz = platz;
-    document.getElementById('price-platz-name').textContent = platz.id;
-    document.getElementById('input-price').value = platz.preis || '';
-    document.getElementById('priceModal').classList.remove('hidden');
+// Price Modal Funktionen (nicht mehr benötigt, da Preise im Setup gesetzt werden)
+function openPriceModal(seite) {
+    // Diese Funktion wird nicht mehr aufgerufen
 }
 
 function closePriceModal() {
     document.getElementById('priceModal').classList.add('hidden');
-    currentEditPlatz = null;
+    currentEditSeite = null;
 }
 
 function savePrice() {
-    if (!currentEditPlatz) return;
-    const preis = parseInt(document.getElementById('input-price').value);
-    if (preis >= 0) {
-        currentEditPlatz.preis = preis;
-        renderBandenplan();
-    }
-    closePriceModal();
+    // Diese Funktion wird nicht mehr benötigt
 }
 
 // Berechne Tage bis Ablaufdatum
