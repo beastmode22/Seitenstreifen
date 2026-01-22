@@ -56,13 +56,22 @@
                     </a>
                     <div class="hidden sm:flex gap-2">
                         <a href="Bandenseite.html" class="nav-link active">Bandenpläne</a>
-                        <a href="Verein.html" class="nav-link">Verträge</a>
+                        <a href="javascript:switchPage('verein')" class="nav-link">Verträge</a>
                     </div>
                 </div>
+                <div class="flex items-center gap-4">
+                    <span id="userTypeDisplay" class="hidden sm:inline text-sm font-medium text-gray-600">
+                        <span class="text-lg">🏢</span> Firma
+                    </span>
+                    <button onclick="logout()" class="px-4 py-2 bg-red-600 text-white rounded-lg font-medium hover:bg-red-700 transition-colors text-sm">
+                        Abmelden
+                    </button>
+                </div>
                 <div class="sm:hidden">
-                    <select onchange="window.location.href = this.value" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-700 bg-white border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <select onchange="if(this.value === 'logout') { logout(); } else if(this.value === 'verein') { switchPage('verein'); } else { window.location.href = this.value; }" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-700 bg-white border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500">
                         <option value="Bandenseite.html" selected>Bandenpläne</option>
-                        <option value="Verein.html">Verträge</option>
+                        <option value="verein">Verträge</option>
+                        <option value="logout">Abmelden</option>
                     </select>
                 </div>
             </div>
@@ -199,66 +208,8 @@
                 <h3 class="text-xl font-bold">Bandenseiten konfigurieren</h3>
                 <button onclick="closeSetupModal()" class="text-gray-400 hover:text-gray-600 text-2xl">&times;</button>
             </div>
-            <div class="p-6 space-y-8">
-                <!-- Nordseite -->
-                <div>
-                    <h4 class="text-sm font-semibold text-gray-700 mb-3">↑ Nordseite</h4>
-                    <div class="grid grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-xs font-medium text-gray-600 mb-2">Anzahl Plätze</label>
-                            <input type="number" id="input-nord" min="0" max="20" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-medium text-gray-600 mb-2">Preis pro Saison (€)</label>
-                            <input type="number" id="price-nord" min="0" step="50" placeholder="0" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm">
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Ostseite -->
-                <div>
-                    <h4 class="text-sm font-semibold text-gray-700 mb-3">→ Ostseite</h4>
-                    <div class="grid grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-xs font-medium text-gray-600 mb-2">Anzahl Plätze</label>
-                            <input type="number" id="input-ost" min="0" max="20" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-medium text-gray-600 mb-2">Preis pro Saison (€)</label>
-                            <input type="number" id="price-ost" min="0" step="50" placeholder="0" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm">
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Südseite -->
-                <div>
-                    <h4 class="text-sm font-semibold text-gray-700 mb-3">↓ Südseite</h4>
-                    <div class="grid grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-xs font-medium text-gray-600 mb-2">Anzahl Plätze</label>
-                            <input type="number" id="input-sued" min="0" max="20" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-medium text-gray-600 mb-2">Preis pro Saison (€)</label>
-                            <input type="number" id="price-sued" min="0" step="50" placeholder="0" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm">
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Westseite -->
-                <div>
-                    <h4 class="text-sm font-semibold text-gray-700 mb-3">← Westseite</h4>
-                    <div class="grid grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-xs font-medium text-gray-600 mb-2">Anzahl Plätze</label>
-                            <input type="number" id="input-west" min="0" max="20" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-medium text-gray-600 mb-2">Preis pro Saison (€)</label>
-                            <input type="number" id="price-west" min="0" step="50" placeholder="0" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm">
-                        </div>
-                    </div>
-                </div>
+            <div id="setupModalContent" class="p-6 space-y-8">
+                <!-- Wird dynamisch gefüllt -->
             </div>
             <div class="p-6 bg-gray-50 rounded-b-2xl flex gap-3">
                 <button onclick="closeSetupModal()" class="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition-colors">Abbrechen</button>
@@ -320,5 +271,36 @@
     </div>
 
     <script src="bandenseiteScript.js"></script>
+    <script>
+        // Prüfe, ob Benutzer eingeloggt und vom Typ 'firma' ist
+        function checkUserType() {
+            const userType = localStorage.getItem('userType');
+            if (!userType) {
+                // Benutzer ist nicht eingeloggt, leite zum Login weiter
+                window.location.href = 'index.html';
+            }
+        }
+        
+        function logout() {
+            // Lösche den Benutzertyp aus dem LocalStorage
+            localStorage.removeItem('userType');
+            // Leite zum Login weiter
+            window.location.href = 'index.html';
+        }
+        
+        function switchPage(pageType) {
+            // Wechsele den Benutzertyp
+            localStorage.setItem('userType', pageType);
+            
+            if (pageType === 'verein') {
+                window.location.href = 'Verein.html';
+            } else if (pageType === 'firma') {
+                window.location.href = 'Bandenseite.html';
+            }
+        }
+        
+        // Prüfe beim Laden
+        checkUserType();
+    </script>
 </body>
 </html>

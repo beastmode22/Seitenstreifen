@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bandenwerbung Manager - Login</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .login-card {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+        
+        .login-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 40px 20px;
+            text-align: center;
+            color: white;
+        }
+        
+        .login-btn {
+            padding: 16px 32px;
+            font-size: 16px;
+            font-weight: 600;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+            width: 100%;
+            text-align: center;
+        }
+        
+        .login-btn-verein {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .login-btn-verein:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);
+        }
+        
+        .login-btn-firma {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+        }
+        
+        .login-btn-firma:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(245, 87, 108, 0.4);
+        }
+    </style>
+</head>
+<body>
+    <div class="flex items-center justify-center min-h-screen p-4">
+        <div class="login-card w-full max-w-md">
+            <!-- Header -->
+            <div class="login-header">
+                <h1 class="text-4xl font-bold mb-2">🏟️ Manager</h1>
+                <p class="text-blue-100">Bandenwerbung Verwaltungssystem</p>
+            </div>
+            
+            <!-- Content -->
+            <div class="p-8">
+                <h2 class="text-2xl font-bold text-gray-900 mb-2 text-center">Willkommen</h2>
+                <p class="text-gray-600 text-center mb-8">Bitte wählen Sie Ihren Benutzertyp:</p>
+                
+                <div class="space-y-4">
+                    <!-- Verein Button -->
+                    <button onclick="login('verein')" class="login-btn login-btn-verein group">
+                        <div class="flex items-center justify-center gap-3">
+                            <span class="text-2xl">⚽</span>
+                            <div class="text-left">
+                                <div class="font-bold">Verein</div>
+                                <div class="text-xs opacity-90 group-hover:opacity-100">Vertragsmanagement</div>
+                            </div>
+                        </div>
+                    </button>
+                    
+                    <!-- Firma Button -->
+                    <button onclick="login('firma')" class="login-btn login-btn-firma group">
+                        <div class="flex items-center justify-center gap-3">
+                            <span class="text-2xl">🏢</span>
+                            <div class="text-left">
+                                <div class="font-bold">Firma</div>
+                                <div class="text-xs opacity-90 group-hover:opacity-100">Bandenpläne & Buchung</div>
+                            </div>
+                        </div>
+                    </button>
+                </div>
+                
+                <div class="mt-8 pt-8 border-t border-gray-200">
+                    <p class="text-xs text-gray-500 text-center">
+                        Dieses System verwaltet die Bandenwerbung an Stadien.<br>
+                        Wählen Sie Ihren Zugriffstyp um fortzufahren.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function login(userType) {
+            // Speichere den Benutzertyp im LocalStorage
+            localStorage.setItem('userType', userType);
+            
+            // Weiterleiten basierend auf Benutzertyp
+            if (userType === 'verein') {
+                window.location.href = 'Verein.html';
+            } else if (userType === 'firma') {
+                window.location.href = 'Bandenseite.html';
+            }
+        }
+        
+        // Prüfe beim Laden, ob der Benutzer bereits eingeloggt ist
+        window.addEventListener('load', function() {
+            const userType = localStorage.getItem('userType');
+            if (userType) {
+                // Benutzer ist bereits eingeloggt, leite zur entsprechenden Seite weiter
+                if (userType === 'verein') {
+                    window.location.href = 'Verein.html';
+                } else if (userType === 'firma') {
+                    window.location.href = 'Bandenseite.html';
+                }
+            }
+        });
+    </script>
+</body>
+</html>

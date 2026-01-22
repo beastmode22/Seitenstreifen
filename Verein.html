@@ -51,19 +51,30 @@
         <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between items-center h-16">
                 <div class="flex items-center gap-12">
-                    <a href="Bandenseite.html" class="flex items-center gap-2 font-bold text-xl text-gray-900 hover:text-blue-600 transition-colors">
+                    <a href="Verein.html" class="flex items-center gap-2 font-bold text-xl text-gray-900 hover:text-blue-600 transition-colors">
                         <span class="text-2xl">🏟️</span>
                         <span class="hidden sm:inline">Manager</span>
                     </a>
                     <div class="hidden sm:flex gap-2">
-                        <a href="Bandenseite.html" class="nav-link">Bandenpläne</a>
+                        <a href="javascript:switchPage('firma')" class="nav-link">Bandenpläne</a>
                         <a href="Verein.html" class="nav-link active">Verträge</a>
+                        <a href="BandeDesign.html" class="nav-link">Design</a>
                     </div>
                 </div>
+                <div class="flex items-center gap-4">
+                    <span id="userTypeDisplay" class="hidden sm:inline text-sm font-medium text-gray-600">
+                        <span class="text-lg">⚽</span> Verein
+                    </span>
+                    <button onclick="logout()" class="px-4 py-2 bg-red-600 text-white rounded-lg font-medium hover:bg-red-700 transition-colors text-sm">
+                        Abmelden
+                    </button>
+                </div>
                 <div class="sm:hidden">
-                    <select onchange="window.location.href = this.value" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-700 bg-white border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                        <option value="Bandenseite.html">Bandenpläne</option>
+                    <select onchange="if(this.value === 'logout') { logout(); } else if(this.value === 'firma') { switchPage('firma'); } else if(this.value === 'design') { window.location.href = 'BandeDesign.html'; } else { window.location.href = this.value; }" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-700 bg-white border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500">
                         <option value="Verein.html" selected>Verträge</option>
+                        <option value="firma">Bandenpläne</option>
+                        <option value="design">Design</option>
+                        <option value="logout">Abmelden</option>
                     </select>
                 </div>
             </div>
@@ -157,6 +168,37 @@
     </div>
 
     <script src="vereinScript.js"></script>
+    <script>
+        // Prüfe, ob Benutzer eingeloggt ist
+        function checkUserType() {
+            const userType = localStorage.getItem('userType');
+            if (!userType) {
+                // Benutzer ist nicht eingeloggt, leite zum Login weiter
+                window.location.href = 'index.html';
+            }
+        }
+        
+        function logout() {
+            // Lösche den Benutzertyp aus dem LocalStorage
+            localStorage.removeItem('userType');
+            // Leite zum Login weiter
+            window.location.href = 'index.html';
+        }
+        
+        function switchPage(pageType) {
+            // Wechsele den Benutzertyp
+            localStorage.setItem('userType', pageType);
+            
+            if (pageType === 'verein') {
+                window.location.href = 'Verein.html';
+            } else if (pageType === 'firma') {
+                window.location.href = 'Bandenseite.html';
+            }
+        }
+        
+        // Prüfe beim Laden
+        checkUserType();
+    </script>
 
 </body>
 </html>

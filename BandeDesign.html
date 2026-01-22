@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bandendesign Creator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .nav-link {
+            position: relative;
+            padding: 0.5rem 1rem;
+            color: #6b7280;
+            font-weight: 500;
+            transition: color 0.3s ease;
+            text-decoration: none;
+        }
+        
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #3b82f6, #1e40af);
+            transition: width 0.3s ease;
+        }
+        
+        .nav-link:hover {
+            color: #1f2937;
+        }
+        
+        .nav-link:hover::after {
+            width: 100%;
+        }
+        
+        .nav-link.active {
+            color: #1e40af;
+        }
+        
+        .nav-link.active::after {
+            width: 100%;
+        }
+
+        .band-preview {
+            height: 120px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            overflow: hidden;
+            position: relative;
+            font-weight: bold;
+            color: white;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .band-preview-logo {
+            position: absolute;
+            height: 100%;
+            width: auto;
+            max-width: 40%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            left: 0;
+            box-shadow: none;
+            padding: 0;
+            overflow: hidden;
+        }
+
+        .band-preview-logo img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        .band-preview-text {
+            margin-left: 100px;
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .logo-preview {
+            width: 120px;
+            height: 120px;
+            background: white;
+            border: 2px dashed #d1d5db;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .logo-preview img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+        }
+
+        .color-input-group {
+            display: flex;
+            align-items: flex-end;
+            gap: 12px;
+        }
+
+        .color-input-group input[type="color"] {
+            width: 80px;
+            height: 50px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        .design-card {
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .design-card:hover {
+            border-color: #3b82f6;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .design-card.selected {
+            border-color: #3b82f6;
+            box-shadow: 0 4px 16px rgba(59, 130, 246, 0.3);
+            background: #eff6ff;
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-gray-50 to-gray-100 min-h-screen">
+
+    <!-- Navigation Bar -->
+    <nav class="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-200/50 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center gap-12">
+                    <a href="Bandenseite.html" class="flex items-center gap-2 font-bold text-xl text-gray-900 hover:text-blue-600 transition-colors">
+                        <span class="text-2xl">🏟️</span>
+                        <span class="hidden sm:inline">Manager</span>
+                    </a>
+                    <div class="hidden sm:flex gap-2">
+                        <a href="javascript:switchPage('firma')" class="nav-link">Bandenpläne</a>
+                        <a href="javascript:switchPage('verein')" class="nav-link">Verträge</a>
+                        <a href="BandeDesign.html" class="nav-link active">Design</a>
+                    </div>
+                </div>
+                <div class="flex items-center gap-4">
+                    <span id="userTypeDisplay" class="hidden sm:inline text-sm font-medium text-gray-600">
+                        <span class="text-lg">🎨</span> Design Creator
+                    </span>
+                    <button onclick="logout()" class="px-4 py-2 bg-red-600 text-white rounded-lg font-medium hover:bg-red-700 transition-colors text-sm">
+                        Abmelden
+                    </button>
+                </div>
+                <div class="sm:hidden">
+                    <select onchange="if(this.value === 'logout') { logout(); } else { switchPage(this.value); }" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-700 bg-white border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="">Design</option>
+                        <option value="firma">Bandenpläne</option>
+                        <option value="verein">Verträge</option>
+                        <option value="logout">Abmelden</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="max-w-7xl mx-auto py-6 px-4 sm:py-8 sm:px-6">
+        <!-- Header -->
+        <div class="mb-8">
+            <h1 class="text-4xl font-bold text-gray-900 mb-2">🎨 Bandendesign Creator</h1>
+            <p class="text-gray-600">Erstellen Sie Ihr individuelles Bandendesign mit Logo und Farben</p>
+        </div>
+
+        <!-- Main Content -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+            <!-- Konfiguration Panel -->
+            <div class="lg:col-span-1">
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 sticky top-24">
+                    <h2 class="text-xl font-bold text-gray-900 mb-6">Design konfigurieren</h2>
+                    
+                    <!-- Logo Upload -->
+                    <div class="mb-6">
+                        <label class="block text-sm font-semibold text-gray-700 mb-3">1. Logo hochladen</label>
+                        <div class="logo-preview" id="logoPreview">
+                            <span class="text-gray-400 text-sm text-center px-2">Klicken zum Hochladen</span>
+                        </div>
+                        <input type="file" id="logoInput" accept="image/*" class="hidden" onchange="handleLogoUpload(event)">
+                        <button onclick="document.getElementById('logoInput').click()" class="mt-3 w-full px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors text-sm">
+                            📤 Logo wählen
+                        </button>
+                        <button onclick="clearLogo()" class="mt-2 w-full px-4 py-2 bg-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-300 transition-colors text-sm">
+                            ✕ Logo löschen
+                        </button>
+                    </div>
+
+                    <!-- Farben Auswahl -->
+                    <div class="mb-6 pb-6 border-b border-gray-200">
+                        <label class="block text-sm font-semibold text-gray-700 mb-4">2. Farben wählen</label>
+                        
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-xs font-medium text-gray-600 mb-2">Primärfarbe</label>
+                                <div class="color-input-group">
+                                    <input type="color" id="primaryColor" value="#003d7a" onchange="updateDesigns()">
+                                    <span id="primaryColorValue" class="text-sm font-mono text-gray-600">#003d7a</span>
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-xs font-medium text-gray-600 mb-2">Akzentfarbe</label>
+                                <div class="color-input-group">
+                                    <input type="color" id="accentColor" value="#ffffff" onchange="updateDesigns()">
+                                    <span id="accentColorValue" class="text-sm font-mono text-gray-600">#ffffff</span>
+                                </div>
+                            </div>
+
+
+                            <div>
+                                <label class="block text-xs font-medium text-gray-600 mb-2">Sekundärfarbe</label>
+                                <div class="color-input-group">
+                                    <input type="color" id="secondaryColor" value="#ff6b35" onchange="updateDesigns()">
+                                    <span id="secondaryColorValue" class="text-sm font-mono text-gray-600">#ff6b35</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Firmenname -->
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2 flex items-center">3. Firmenname (optional)
+                            <input type="color" id="companyNameColor" style="width: 22px; height: 22px; margin-left: 8px; vertical-align: middle;" onchange="updateDesigns()">
+                        </label>
+                        <div class="flex gap-2 mb-2">
+                            <select id="companyNameFont" class="px-2 py-1 border border-gray-300 rounded" onchange="updateDesigns()">
+                                <option value="inherit">Standard</option>
+                                <option value="Arial, sans-serif">Arial</option>
+                                <option value="Tahoma, Geneva, sans-serif">Tahoma</option>
+                                <option value="Verdana, Geneva, sans-serif">Verdana</option>
+                                <option value="Georgia, serif">Georgia</option>
+                                <option value="Times New Roman, Times, serif">Times New Roman</option>
+                                <option value="Courier New, Courier, monospace">Courier New</option>
+                                <option value="monospace">Monospace</option>
+                            </select>
+                        </div>
+                        <input type="text" id="companyName" placeholder="z.B. Ihre Firma" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" onchange="updateDesigns()">
+                    </div>
+
+                    <!-- Sekundärtext -->
+                    <div class="mt-4">
+                        <label class="block text-sm font-semibold text-gray-700 mb-2 flex items-center">4. Sekundärtext (optional)
+                            <input type="color" id="secondaryTextColor" style="width: 22px; height: 22px; margin-left: 8px; vertical-align: middle;" onchange="updateDesigns()">
+                        </label>
+                        <div class="flex gap-2 mb-2">
+                            <select id="secondaryTextFont" class="px-2 py-1 border border-gray-300 rounded" onchange="updateDesigns()">
+                                <option value="inherit">Standard</option>
+                                <option value="Arial, sans-serif">Arial</option>
+                                <option value="Tahoma, Geneva, sans-serif">Tahoma</option>
+                                <option value="Verdana, Geneva, sans-serif">Verdana</option>
+                                <option value="Georgia, serif">Georgia</option>
+                                <option value="Times New Roman, Times, serif">Times New Roman</option>
+                                <option value="Courier New, Courier, monospace">Courier New</option>
+                                <option value="monospace">Monospace</option>
+                            </select>
+                        </div>
+                        <input type="text" id="secondaryText" placeholder="z.B. Slogan oder Zusatzinfo" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" onchange="updateDesigns()">
+                    </div>
+                    <!-- Kontakt/Adresse/Webseite -->
+                    <div class="mt-4">
+                        <label class="block text-sm font-semibold text-gray-700 mb-2 flex items-center">5. Kontakt/Adresse/Webseite (optional)
+                            <input type="color" id="contactTextColor" style="width: 22px; height: 22px; margin-left: 8px; vertical-align: middle;" onchange="updateDesigns()">
+                        </label>
+                        <div class="flex gap-2 mb-2">
+                            <select id="contactTextFont" class="px-2 py-1 border border-gray-300 rounded" onchange="updateDesigns()">
+                                <option value="inherit">Standard</option>
+                                <option value="Arial, sans-serif">Arial</option>
+                                <option value="Tahoma, Geneva, sans-serif">Tahoma</option>
+                                <option value="Verdana, Geneva, sans-serif">Verdana</option>
+                                <option value="Georgia, serif">Georgia</option>
+                                <option value="Times New Roman, Times, serif">Times New Roman</option>
+                                <option value="Courier New, Courier, monospace">Courier New</option>
+                                <option value="monospace">Monospace</option>
+                            </select>
+                        </div>
+                        <input type="text" id="contactText" placeholder="z.B. Telefon, Adresse oder Webseite" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" onchange="updateDesigns()">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Design Vorschläge -->
+            <div class="lg:col-span-2">
+                <h2 class="text-xl font-bold text-gray-900 mb-4">Design-Vorschläge</h2>
+                <div id="designContainer" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Designs werden hier eingefügt -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Ausgewähltes Design anzeigen -->
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
+            <h2 class="text-xl font-bold text-gray-900 mb-4">Vorschau: Ausgewähltes Design</h2>
+            <div id="selectedDesignPreview" class="flex justify-center items-center py-12 bg-gray-50 rounded-lg border border-gray-200">
+                <p class="text-gray-500">Wählen Sie ein Design aus</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="bandeDesignScript.js"></script>
+    <script>
+        // Prüfe, ob Benutzer eingeloggt ist
+        function checkUserType() {
+            const userType = localStorage.getItem('userType');
+            if (!userType) {
+                window.location.href = 'index.html';
+            }
+        }
+        
+        function logout() {
+            localStorage.removeItem('userType');
+            window.location.href = 'index.html';
+        }
+        
+        function switchPage(pageType) {
+            localStorage.setItem('userType', pageType);
+            
+            if (pageType === 'verein') {
+                window.location.href = 'Verein.html';
+            } else if (pageType === 'firma') {
+                window.location.href = 'Bandenseite.html';
+            }
+        }
+        
+        checkUserType();
+    </script>
+</body>
+</html>

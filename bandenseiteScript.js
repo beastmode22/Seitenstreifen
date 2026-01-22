@@ -494,16 +494,46 @@ function showBookingInfo(platz) {
     alert(`Platz ${platz.id} ist verfügbar!\nJetzt unverbindlich anfragen?`);
 }
 
+// Komponente: Input-Felder für Anzahl Plätze und Preis
+function createSeiteInputComponent(label, icon, positionKey) {
+    return `
+        <div>
+            <h4 class="text-sm font-semibold text-gray-700 mb-3">${icon} ${label}</h4>
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-xs font-medium text-gray-600 mb-2">Anzahl Plätze</label>
+                    <input type="number" id="input-${positionKey}" min="0" max="20" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-gray-600 mb-2">Preis pro Saison (€)</label>
+                    <input type="number" id="price-${positionKey}" min="0" step="50" placeholder="0" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm">
+                </div>
+            </div>
+        </div>
+    `;
+}
+
 // Setup Modal Funktionen
 function openSetupModal() {
-    document.getElementById('input-nord').value = bandenConfig.nord;
-    document.getElementById('input-ost').value = bandenConfig.ost;
-    document.getElementById('input-sued').value = bandenConfig.sued;
-    document.getElementById('input-west').value = bandenConfig.west;
-    document.getElementById('price-nord').value = seitenPreise.nord || '';
-    document.getElementById('price-ost').value = seitenPreise.ost || '';
-    document.getElementById('price-sued').value = seitenPreise.sued || '';
-    document.getElementById('price-west').value = seitenPreise.west || '';
+    const modalContent = document.getElementById('setupModalContent');
+    const seiten = [
+        { label: 'Nordseite', icon: '↑', key: 'nord' },
+        { label: 'Ostseite', icon: '→', key: 'ost' },
+        { label: 'Südseite', icon: '↓', key: 'sued' },
+        { label: 'Westseite', icon: '←', key: 'west' }
+    ];
+    
+    // Generiere die Komponenten
+    modalContent.innerHTML = seiten.map(seite => 
+        createSeiteInputComponent(seite.label, seite.icon, seite.key)
+    ).join('');
+    
+    // Fülle die Werte
+    seiten.forEach(seite => {
+        document.getElementById(`input-${seite.key}`).value = bandenConfig[seite.key];
+        document.getElementById(`price-${seite.key}`).value = seitenPreise[seite.key] || '';
+    });
+    
     document.getElementById('setupModal').classList.remove('hidden');
 }
 
@@ -512,14 +542,12 @@ function closeSetupModal() {
 }
 
 function saveSetup() {
-    bandenConfig.nord = parseInt(document.getElementById('input-nord').value) || 0;
-    bandenConfig.ost = parseInt(document.getElementById('input-ost').value) || 0;
-    bandenConfig.sued = parseInt(document.getElementById('input-sued').value) || 0;
-    bandenConfig.west = parseInt(document.getElementById('input-west').value) || 0;
-    seitenPreise.nord = parseInt(document.getElementById('price-nord').value) || null;
-    seitenPreise.ost = parseInt(document.getElementById('price-ost').value) || null;
-    seitenPreise.sued = parseInt(document.getElementById('price-sued').value) || null;
-    seitenPreise.west = parseInt(document.getElementById('price-west').value) || null;
+    const seiten = ['nord', 'ost', 'sued', 'west'];
+    
+    seiten.forEach(seite => {
+        bandenConfig[seite] = parseInt(document.getElementById(`input-${seite}`).value) || 0;
+        seitenPreise[seite] = parseInt(document.getElementById(`price-${seite}`).value) || null;
+    });
     
     initBandenPlaetze();
     renderBandenplan();
