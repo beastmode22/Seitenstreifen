@@ -83,7 +83,7 @@
         <!-- Header mit Setup -->
         <div class="mb-8 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <div>
-                <h1 class="text-3xl sm:text-4xl font-bold text-gray-900 mb-2">Stadion-Bandenplan</h1>
+                <h1 class="text-3xl sm:text-4xl font-bold text-gray-900 mb-2" id="vereinsName">Stadion-Bandenplan</h1>
                 <p class="text-gray-600 text-sm sm:text-base">Verwaltung und Übersicht der Bandenpositionen</p>
             </div>
             <div class="flex gap-2 flex-wrap">
@@ -272,35 +272,39 @@
 
     <script src="bandenseiteScript.js"></script>
     <script>
-        // Prüfe, ob Benutzer eingeloggt und vom Typ 'firma' ist
-        function checkUserType() {
-            const userType = localStorage.getItem('userType');
-            if (!userType) {
-                // Benutzer ist nicht eingeloggt, leite zum Login weiter
-                window.location.href = 'index.html';
-            }
-        }
-        
-        function logout() {
-            // Lösche den Benutzertyp aus dem LocalStorage
-            localStorage.removeItem('userType');
-            // Leite zum Login weiter
+        // Login-Check: Weiterleitung, falls nicht eingeloggt
+        if (!localStorage.getItem('loggedInUser')) {
             window.location.href = 'index.html';
         }
-        
+        // Vereinsname aus URL anzeigen
+        function getVereinsName() {
+            const params = new URLSearchParams(window.location.search);
+            return params.get('verein') || 'Stadion-Bandenplan';
+        }
+        document.getElementById('vereinsName').textContent = getVereinsName();
+
+        // Bande-Klick-Handler für freie Banden
+        function handleBandeClick(bandeId, seite) {
+            const verein = getVereinsName();
+            window.location.href = `BandeDesign.html?verein=${encodeURIComponent(verein)}&bande=${encodeURIComponent(bandeId)}&seite=${encodeURIComponent(seite)}`;
+        }
+
+        // Patch für bandenseiteScript.js: Füge handleBandeClick zu freien Banden hinzu
+        // (Erfordert, dass renderGridView/renderStadiumView die Funktion nutzt)
+
+        function logout() {
+            localStorage.removeItem('userType');
+            localStorage.removeItem('loggedInUser');
+            window.location.href = 'index.html';
+        }
         function switchPage(pageType) {
-            // Wechsele den Benutzertyp
             localStorage.setItem('userType', pageType);
-            
             if (pageType === 'verein') {
                 window.location.href = 'Verein.html';
             } else if (pageType === 'firma') {
                 window.location.href = 'Bandenseite.html';
             }
         }
-        
-        // Prüfe beim Laden
-        checkUserType();
     </script>
 </body>
 </html>

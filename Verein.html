@@ -169,35 +169,23 @@
 
     <script src="vereinScript.js"></script>
     <script>
-        // Prüfe, ob Benutzer eingeloggt ist
-        function checkUserType() {
-            const userType = localStorage.getItem('userType');
-            if (!userType) {
-                // Benutzer ist nicht eingeloggt, leite zum Login weiter
-                window.location.href = 'index.html';
-            }
-        }
-        
-        function logout() {
-            // Lösche den Benutzertyp aus dem LocalStorage
-            localStorage.removeItem('userType');
-            // Leite zum Login weiter
+        // Login-Check: Weiterleitung, falls nicht eingeloggt
+        if (!localStorage.getItem('loggedInUser')) {
             window.location.href = 'index.html';
         }
-        
+        function logout() {
+            localStorage.removeItem('userType');
+            localStorage.removeItem('loggedInUser');
+            window.location.href = 'index.html';
+        }
         function switchPage(pageType) {
-            // Wechsele den Benutzertyp
             localStorage.setItem('userType', pageType);
-            
             if (pageType === 'verein') {
                 window.location.href = 'Verein.html';
             } else if (pageType === 'firma') {
                 window.location.href = 'Bandenseite.html';
             }
         }
-        
-        // Prüfe beim Laden
-        checkUserType();
     </script>
 
 </body>

@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Foto als Bestätigung</title>
+	<style>
+		body { font-family: Arial, sans-serif; background: #f4f4f4; margin: 0; padding: 0; }
+		.container { max-width: 500px; margin: 40px auto; background: #fff; padding: 24px; border-radius: 10px; box-shadow: 0 2px 8px #0001; }
+		h2 { text-align: center; }
+		.preview { display: flex; flex-direction: column; align-items: center; margin: 20px 0; }
+		video, img { max-width: 100%; border-radius: 8px; }
+		.actions { display: flex; justify-content: center; gap: 10px; margin-top: 16px; }
+		button { padding: 8px 16px; border: none; border-radius: 5px; background: #0078d7; color: #fff; cursor: pointer; }
+		button:disabled { background: #aaa; }
+		input[type="file"] { display: none; }
+		label { cursor: pointer; color: #0078d7; text-decoration: underline; }
+	</style>
+</head>
+<body>
+	<div class="container">
+		<h2>Foto als Bestätigung aufnehmen/hochladen</h2>
+		<div id="infoBox" style="text-align:center; margin-bottom:12px; color:#333; font-size:1.1em;"></div>
+		<div class="preview">
+			<video id="video" autoplay playsinline style="display:none;"></video>
+			<img id="photo" alt="Vorschau" style="display:none;" />
+		</div>
+		<div class="actions">
+			<button id="startCamera">Kamera starten</button>
+			<button id="takePhoto" disabled>Foto aufnehmen</button>
+			<label for="fileInput">Datei auswählen</label>
+			<input type="file" id="fileInput" accept="image/*">
+		</div>
+		<div class="actions">
+			<button id="downloadPhoto" disabled>Foto herunterladen</button>
+		</div>
+		<div id="linkSection" style="display:none; margin-top:18px; text-align:center;">
+			<input id="photoLink" type="text" readonly style="width:80%; padding:6px; border:1px solid #ccc; border-radius:5px; font-size:1em;" />
+			<button id="copyLink" style="margin-left:8px; padding:6px 12px; font-size:1em;">Link kopieren</button>
+			<div id="copyMsg" style="color:green; font-size:0.95em; margin-top:6px; display:none;">Link kopiert!</div>
+		</div>
+		<p style="text-align:center; color:#888; font-size:0.95em;">Das Foto dient als Nachweis für den Kunden.</p>
+		<div id="vertragMsg" style="display:none; text-align:center; color:green; font-size:1.1em; margin-top:18px;"></div>
+	</div>
+	<script>
+		// Login-Check: Weiterleitung, falls nicht eingeloggt
+		if (!localStorage.getItem('loggedInUser')) {
+			window.location.href = 'index.html';
+		}
+		// Zeige Vereinsname, Bande, Seite
+		function getQueryParam(name) {
+			const params = new URLSearchParams(window.location.search);
+			return params.get(name) || '';
+		}
+		const verein = getQueryParam('verein');
+		const bande = getQueryParam('bande');
+		const seite = getQueryParam('seite');
+		if (verein || bande || seite) {
+			document.getElementById('infoBox').textContent =
+				`Verein: ${verein ? verein : '-'}${bande ? ' | Bande: ' + bande : ''}${seite ? ' | Seite: ' + seite : ''}`;
+		}
+		const video = document.getElementById('video');
+		const photo = document.getElementById('photo');
+		const startCamera = document.getElementById('startCamera');
+		const takePhoto = document.getElementById('takePhoto');
+		const fileInput = document.getElementById('fileInput');
+		const downloadPhoto = document.getElementById('downloadPhoto');
+		let stream = null;
+		let photoData = null;
+		const linkSection = document.getElementById('linkSection');
+		const photoLink = document.getElementById('photoLink');
+		const copyLink = document.getElementById('copyLink');
+		const copyMsg = document.getElementById('copyMsg');
+
+		startCamera.onclick = async () => {
+			if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+				stream = await navigator.mediaDevices.getUserMedia({ video: true });
+				video.srcObject = stream;
+				video.style.display = 'block';
+				photo.style.display = 'none';
+				takePhoto.disabled = false;
+			}
+		};
+
+		function showLinkSection(dataUrl) {
+			photoLink.value = dataUrl;
+			linkSection.style.display = 'block';
+			copyMsg.style.display = 'none';
+		}
+
+		function createVertrag() {
+			// Dummy-Vertrag im LocalStorage anlegen
+			const vertragsListe = JSON.parse(localStorage.getItem('vertraege') || '[]');
+			const kunde = JSON.parse(localStorage.getItem('loggedInUser'));
+			const vertrag = {
+				verein: verein,
+				bande: bande,
+				seite: seite,
+				kunde: kunde ? kunde.name : '',
+				foto: photoData,
+				status: 'aktiv',
+				datum: new Date().toISOString().slice(0,10)
+			};
+			vertragsListe.push(vertrag);
+			localStorage.setItem('vertraege', JSON.stringify(vertragsListe));
+			document.getElementById('vertragMsg').textContent = 'Vertrag wurde erfolgreich angelegt!';
+			document.getElementById('vertragMsg').style.display = 'block';
+		}
+
+		takePhoto.onclick = () => {
+			const canvas = document.createElement('canvas');
+			canvas.width = video.videoWidth;
+			canvas.height = video.videoHeight;
+			canvas.getContext('2d').drawImage(video, 0, 0);
+			photo.src = canvas.toDataURL('image/png');
+			photoData = photo.src;
+			photo.style.display = 'block';
+			video.style.display = 'none';
+			downloadPhoto.disabled = false;
+			showLinkSection(photoData);
+			createVertrag();
+			if (stream) {
+				stream.getTracks().forEach(track => track.stop());
+			}
+		};
+
+		fileInput.onchange = (e) => {
+			const file = e.target.files[0];
+			if (file) {
+				const reader = new FileReader();
+				reader.onload = function(evt) {
+					photo.src = evt.target.result;
+					photoData = photo.src;
+					photo.style.display = 'block';
+					video.style.display = 'none';
+					downloadPhoto.disabled = false;
+					showLinkSection(photoData);
+					createVertrag();
+					if (stream) {
+						stream.getTracks().forEach(track => track.stop());
+					}
+				};
+				reader.readAsDataURL(file);
+			}
+		};
+
+		downloadPhoto.onclick = () => {
+			if (photoData) {
+				const a = document.createElement('a');
+				a.href = photoData;
+				a.download = 'Bandenfoto.png';
+				a.click();
+			}
+		};
+
+		copyLink.onclick = () => {
+			photoLink.select();
+			document.execCommand('copy');
+			copyMsg.style.display = 'block';
+			setTimeout(() => copyMsg.style.display = 'none', 1500);
+		};
+	</script>
+</body>
+</html>
