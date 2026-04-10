@@ -83,36 +83,74 @@ function renderGridView() {
         if (c) c.innerHTML = '';
     });
 
+    // Prüfe ob Benutzer ein Kunde ist
+    const user = JSON.parse(localStorage.getItem('loggedInUser') || '{}');
+    const istKunde = user.type === 'kunde';
+
     bandenPlaetze.forEach(platz => {
         const isBelegt = platz.vertragId !== null;
-        
-        // Nur belegte Banden anzeigen
-        if (!isBelegt) return;
-        
-        const vertrag = vertraege.find(v => v.id === platz.vertragId);
         const container = containers[platz.position];
         
         if (!container) return;
 
         const btn = document.createElement('button');
-        btn.className = `
-            group relative text-xs sm:text-sm font-bold rounded-lg transition-all transform hover:scale-105
-            h-16 sm:h-20 flex flex-col items-center justify-center gap-1 px-2 sm:px-3
-            bg-gradient-to-br from-blue-500 to-blue-700 hover:from-blue-600 hover:to-blue-800
-            text-white shadow-md hover:shadow-lg border border-blue-400
-            cursor-pointer overflow-hidden
-        `;
+        
+        if (isBelegt) {
+            // Belegte Bande (rot)
+            const vertrag = vertraege.find(v => v.id === platz.vertragId);
+            
+            btn.className = `
+                group relative text-xs sm:text-sm font-bold rounded-lg transition-all transform hover:scale-105
+                h-16 sm:h-20 flex flex-col items-center justify-center gap-1 px-2 sm:px-3
+                bg-gradient-to-br from-red-500 to-red-700 hover:from-red-600 hover:to-red-800
+                text-white shadow-md hover:shadow-lg border border-red-400
+                cursor-pointer overflow-hidden
+            `;
 
-        btn.innerHTML = `
-            <span class="block text-center font-bold line-clamp-2 text-[11px] sm:text-xs">${vertrag.name}</span>
-            <span class="text-[10px] opacity-90 font-medium">${vertrag.betrag}€</span>
-        `;
+            btn.innerHTML = `
+                <span class="block text-center font-bold line-clamp-2 text-[11px] sm:text-xs">${vertrag.name}</span>
+                <span class="text-[10px] opacity-90 font-medium">${vertrag.betrag}€</span>
+            `;
 
-        btn.title = vertrag.name;
+            btn.title = vertrag.name;
 
-        btn.onclick = () => {
-            openModal(platz.vertragId);
-        };
+            btn.onclick = () => {
+                openModal(platz.vertragId);
+            };
+        } else {
+            // Freie Bande (blau)
+            const preis = seitenPreise[platz.position] || 0;
+            
+            btn.className = `
+                group relative text-xs sm:text-sm font-bold rounded-lg transition-all transform hover:scale-105
+                h-16 sm:h-20 flex flex-col items-center justify-center gap-1 px-2 sm:px-3
+                bg-gradient-to-br from-blue-500 to-blue-700 hover:from-blue-600 hover:to-blue-800
+                text-white shadow-md hover:shadow-lg border border-blue-400
+                ${istKunde ? 'cursor-pointer' : 'cursor-default'}
+                overflow-hidden
+            `;
+
+            btn.innerHTML = `
+                <span class="block text-center font-bold text-[11px] sm:text-xs">${platz.id}</span>
+                <span class="text-[10px] opacity-90 font-medium">Frei${preis > 0 ? ' - ' + preis + '€' : ''}</span>
+            `;
+
+            btn.title = istKunde ? `${platz.id} - Anfrage stellen` : `${platz.id} - Frei`;
+
+            if (istKunde) {
+                // Für Kunden: Öffne Anfrage-Modal
+                btn.onclick = () => {
+                    if (typeof oeffneAnfrageModal === 'function') {
+                        oeffneAnfrageModal(platz.id, platz.position, preis);
+                    }
+                };
+            } else {
+                // Für Vereine: Preis setzen (optional)
+                btn.onclick = () => {
+                    // Könnte hier eine Preis-Bearbeitungsfunktion aufrufen
+                };
+            }
+        }
 
         container.appendChild(btn);
     });
@@ -426,6 +464,8 @@ function renderStadiumZoom() {
 
 function createBandLine(svg, x1, y1, x2, y2, platz) {
     const isBelegt = platz.vertragId !== null;
+    const user = JSON.parse(localStorage.getItem('loggedInUser') || '{}');
+    const istKunde = user.type === 'kunde';
     
     const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
     line.setAttribute('x1', x1);
@@ -436,12 +476,38 @@ function createBandLine(svg, x1, y1, x2, y2, platz) {
     line.setAttribute('stroke-width', '8');
     line.setAttribute('stroke-linecap', 'round');
     
+    // Klickbar machen für freie Banden (nur für Kunden)
+    if (!isBelegt && istKunde) {
+        line.style.cursor = 'pointer';
+        line.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const preis = seitenPreise[platz.position] || 0;
+            if (typeof oeffneAnfrageModal === 'function') {
+                oeffneAnfrageModal(platz.id, platz.position, preis);
+            }
+        });
+        line.addEventListener('mouseover', () => {
+            line.setAttribute('stroke', '#3b82f6');
+        });
+        line.addEventListener('mouseout', () => {
+            line.setAttribute('stroke', '#60a5fa');
+        });
+    } else if (isBelegt) {
+        line.style.cursor = 'pointer';
+        line.addEventListener('click', (e) => {
+            e.stopPropagation();
+            openModal(platz.vertragId);
+        });
+    }
+    
     svg.appendChild(line);
 }
 
 function createBandRect(x, y, width, height, platz, isClickable = true) {
     const isBelegt = platz.vertragId !== null;
     const vertrag = isBelegt ? vertraege.find(v => v.id === platz.vertragId) : null;
+    const user = JSON.parse(localStorage.getItem('loggedInUser') || '{}');
+    const istKunde = user.type === 'kunde';
 
     const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
     if (isClickable) {
@@ -466,7 +532,15 @@ function createBandRect(x, y, width, height, platz, isClickable = true) {
             if (isBelegt) {
                 openModal(platz.vertragId);
             } else {
-                openPriceModal(platz);
+                // Für Kunden: Anfrage-Modal, für Vereine: Preis-Modal
+                if (istKunde) {
+                    const preis = seitenPreise[platz.position] || 0;
+                    if (typeof oeffneAnfrageModal === 'function') {
+                        oeffneAnfrageModal(platz.id, platz.position, preis);
+                    }
+                } else {
+                    openPriceModal(platz);
+                }
             }
         };
     }

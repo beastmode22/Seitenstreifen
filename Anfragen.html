@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Anfragen | Bandenwerbung Manager</title>
+    <link rel="stylesheet" href="Verein.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body>
+
+    <!-- Navigation Bar -->
+    <nav class="main-nav">
+        <div class="nav-container">
+            <div class="nav-content">
+                <div class="flex items-center gap-12">
+                    <a href="Verein.html" class="nav-brand">
+                        <span class="text-2xl">🏟️</span>
+                        <span class="hidden sm:inline">Manager</span>
+                    </a>
+                    <div class="nav-links">
+                        <a href="VereinSuche.html" class="nav-link">Vereinssuche</a>
+                        <a href="javascript:switchPage('firma')" class="nav-link">Bandenpläne</a>
+                        <a href="Verein.html" class="nav-link">Verträge</a>
+                        <a href="Anfragen.html" class="nav-link active">Anfragen</a>
+                        <a href="BandeDesign.html" class="nav-link">Design</a>
+                    </div>
+                </div>
+                <div class="nav-actions">
+                    <span class="user-badge">
+                        <span>⚽</span> Verein
+                    </span>
+                    <button onclick="logout()" class="btn btn-danger">
+                        Abmelden
+                    </button>
+                </div>
+                <!-- Mobile Menu -->
+                <div class="sm:hidden">
+                    <select onchange="handleMobileNav(this.value)" class="form-input text-sm">
+                        <option value="">Menü</option>
+                        <option value="VereinSuche.html">Vereinssuche</option>
+                        <option value="firma">Bandenpläne</option>
+                        <option value="Verein.html">Verträge</option>
+                        <option value="Anfragen.html" selected>Anfragen</option>
+                        <option value="BandeDesign.html">Design</option>
+                        <option value="logout">Abmelden</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="container" style="padding-top: 1rem; padding-bottom: 2rem;">
+        <!-- Header -->
+        <header class="mb-8">
+            <h1 class="text-4xl font-bold text-gray-900 mb-2">📬 Anfragen</h1>
+            <p class="text-gray-600">Verwalten Sie eingehende Bandenwerbe-Anfragen</p>
+        </header>
+
+        <!-- Statistik -->
+        <div class="stats-grid mb-8">
+            <div class="stat-card">
+                <p class="stat-label">Offene Anfragen</p>
+                <p class="stat-value text-orange-600" id="stat-offen">0</p>
+            </div>
+            <div class="stat-card">
+                <p class="stat-label">Angenommen</p>
+                <p class="stat-value text-green-600" id="stat-angenommen">0</p>
+            </div>
+            <div class="stat-card">
+                <p class="stat-label">Abgelehnt</p>
+                <p class="stat-value text-red-600" id="stat-abgelehnt">0</p>
+            </div>
+        </div>
+
+        <!-- Filter Tabs -->
+        <div class="mb-6 flex gap-3 border-b border-gray-200">
+            <button onclick="filterAnfragen('alle')" id="filter-alle" class="pb-3 px-4 font-medium text-blue-600 border-b-2 border-blue-600">
+                Alle
+            </button>
+            <button onclick="filterAnfragen('offen')" id="filter-offen" class="pb-3 px-4 font-medium text-gray-600 hover:text-gray-900 border-b-2 border-transparent">
+                Offen
+            </button>
+            <button onclick="filterAnfragen('angenommen')" id="filter-angenommen" class="pb-3 px-4 font-medium text-gray-600 hover:text-gray-900 border-b-2 border-transparent">
+                Angenommen
+            </button>
+            <button onclick="filterAnfragen('abgelehnt')" id="filter-abgelehnt" class="pb-3 px-4 font-medium text-gray-600 hover:text-gray-900 border-b-2 border-transparent">
+                Abgelehnt
+            </button>
+        </div>
+
+        <!-- Anfragen Liste -->
+        <div id="anfragen-liste" class="space-y-4">
+            <!-- Anfragen werden hier eingefügt -->
+        </div>
+
+        <!-- Leere Nachricht -->
+        <div id="keine-anfragen" class="hidden text-center py-12">
+            <div class="text-6xl mb-4">📭</div>
+            <p class="text-lg font-semibold text-gray-700 mb-2">Keine Anfragen vorhanden</p>
+            <p class="text-gray-500">Neue Anfragen erscheinen hier automatisch</p>
+        </div>
+    </main>
+
+    <!-- Detail Modal -->
+    <div id="anfrageDetailModal" class="modal-overlay hidden">
+        <div class="modal-content max-w-2xl">
+            <div class="modal-header">
+                <div>
+                    <h2 class="text-2xl font-bold text-gray-900">Anfrage Details</h2>
+                    <p class="text-gray-600 text-sm mt-1">Bandenplatz: <span id="detail-bande-id" class="font-semibold"></span></p>
+                </div>
+                <button onclick="closeDetailModal()" class="modal-close">&times;</button>
+            </div>
+            
+            <div class="modal-body space-y-6">
+                <!-- Kundendaten -->
+                <div>
+                    <h3 class="text-lg font-semibold text-gray-900 mb-3">👤 Kundendaten</h3>
+                    <div class="bg-gray-50 rounded-lg p-4 space-y-2">
+                        <div class="flex justify-between">
+                            <span class="text-sm text-gray-600">Firma:</span>
+                            <span class="text-sm font-semibold text-gray-900" id="detail-firma"></span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-sm text-gray-600">Ansprechpartner:</span>
+                            <span class="text-sm font-semibold text-gray-900" id="detail-name"></span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-sm text-gray-600">E-Mail:</span>
+                            <a id="detail-email" href="#" class="text-sm font-semibold text-blue-600 hover:underline"></a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Design Vorschau -->
+                <div>
+                    <h3 class="text-lg font-semibold text-gray-900 mb-3">🎨 Gewünschtes Design</h3>
+                    <div id="detail-design-vorschau" class="h-32 rounded-lg border-2 border-gray-300 flex items-center justify-center">
+                        <p id="detail-design-text" class="text-2xl font-bold text-white"></p>
+                    </div>
+                </div>
+
+                <!-- Nachricht -->
+                <div id="detail-nachricht-container" class="hidden">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-3">💬 Nachricht</h3>
+                    <div class="bg-gray-50 rounded-lg p-4">
+                        <p id="detail-nachricht" class="text-sm text-gray-700"></p>
+                    </div>
+                </div>
+
+                <!-- Preis -->
+                <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                    <div class="flex justify-between items-center">
+                        <span class="text-sm font-medium text-blue-900">Preis pro Saison:</span>
+                        <span id="detail-preis" class="text-2xl font-bold text-blue-600">0 €</span>
+                    </div>
+                </div>
+
+                <!-- Zeitstempel -->
+                <div class="text-xs text-gray-500 pt-4 border-t border-gray-200">
+                    Eingegangen am: <span id="detail-erstellt" class="font-medium"></span>
+                </div>
+
+                <!-- Aktionen (nur für offene Anfragen) -->
+                <div id="detail-aktionen" class="flex gap-3 pt-4">
+                    <button onclick="lehneAnfrageAb()" class="btn btn-danger flex-1">
+                        ✗ Ablehnen
+                    </button>
+                    <button onclick="nehmeAnfrageAn()" class="btn btn-success flex-1">
+                        ✓ Annehmen
+                    </button>
+                </div>
+
+                <!-- Status-Anzeige (für bearbeitete Anfragen) -->
+                <div id="detail-status-container" class="hidden">
+                    <div id="detail-status-badge" class="text-center py-3 rounded-lg font-semibold"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="anfrageSystem.js"></script>
+    <script>
+        // Login-Check
+        if (!localStorage.getItem('loggedInUser')) {
+            window.location.href = 'index.html';
+        }
+
+        // Prüfe ob Benutzer ein Verein ist
+        const user = JSON.parse(localStorage.getItem('loggedInUser') || '{}');
+        if (user.type !== 'verein') {
+            alert('Diese Seite ist nur für Vereine zugänglich.');
+            window.location.href = 'index.html';
+        }
+
+        let aktuellerFilter = 'alle';
+        let aktuelleAnfrage = null;
+
+        /**
+         * Lädt und zeigt Anfragen an
+         */
+        function ladeUndZeigeAnfragen() {
+            const vereinsName = user.name || 'FC Teststadt';
+            const alleAnfragen = ladeVereinsAnfragen(vereinsName);
+            
+            // Statistiken aktualisieren
+            const offen = alleAnfragen.filter(a => a.status === 'offen').length;
+            const angenommen = alleAnfragen.filter(a => a.status === 'angenommen').length;
+            const abgelehnt = alleAnfragen.filter(a => a.status === 'abgelehnt').length;
+            
+            document.getElementById('stat-offen').textContent = offen;
+            document.getElementById('stat-angenommen').textContent = angenommen;
+            document.getElementById('stat-abgelehnt').textContent = abgelehnt;
+            
+            // Anfragen filtern
+            let gefiltert = alleAnfragen;
+            if (aktuellerFilter !== 'alle') {
+                gefiltert = alleAnfragen.filter(a => a.status === aktuellerFilter);
+            }
+            
+            // Sortieren nach Datum (neueste zuerst)
+            gefiltert.sort((a, b) => new Date(b.erstelltAm) - new Date(a.erstelltAm));
+            
+            // Anzeigen
+            const container = document.getElementById('anfragen-liste');
+            const keineAnfragen = document.getElementById('keine-anfragen');
+            
+            if (gefiltert.length === 0) {
+                container.classList.add('hidden');
+                keineAnfragen.classList.remove('hidden');
+                return;
+            }
+            
+            container.classList.remove('hidden');
+            keineAnfragen.classList.add('hidden');
+            container.innerHTML = gefiltert.map(anfrage => erstelleAnfrageKarte(anfrage)).join('');
+        }
+
+        /**
+         * Erstellt HTML für eine Anfrage-Karte
+         */
+        function erstelleAnfrageKarte(anfrage) {
+            const statusKlassen = {
+                'offen': 'bg-orange-100 text-orange-800',
+                'angenommen': 'bg-green-100 text-green-800',
+                'abgelehnt': 'bg-red-100 text-red-800'
+            };
+            
+            const statusTexte = {
+                'offen': '🔔 Offen',
+                'angenommen': '✓ Angenommen',
+                'abgelehnt': '✗ Abgelehnt'
+            };
+            
+            const datum = new Date(anfrage.erstelltAm).toLocaleDateString('de-DE', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+            
+            return `
+                <div class="card card-clickable" onclick="zeigeAnfrageDetails(${anfrage.id})">
+                    <div class="flex justify-between items-start mb-4">
+                        <div>
+                            <h3 class="text-lg font-bold text-gray-900">${anfrage.kundenFirma}</h3>
+                            <p class="text-sm text-gray-600 mt-1">Bande: ${anfrage.bandeId} (${anfrage.position})</p>
+                        </div>
+                        <span class="${statusKlassen[anfrage.status]} px-3 py-1 rounded-full text-xs font-semibold">
+                            ${statusTexte[anfrage.status]}
+                        </span>
+                    </div>
+                    
+                    <div class="flex justify-between items-center pt-4 border-t border-gray-200">
+                        <div>
+                            <p class="text-xs text-gray-500">Kontakt</p>
+                            <p class="text-sm font-semibold text-gray-900">${anfrage.kundenName}</p>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-xs text-gray-500">Preis</p>
+                            <p class="text-lg font-bold text-blue-600">${anfrage.preis} €</p>
+                        </div>
+                    </div>
+                    
+                    <p class="text-xs text-gray-400 mt-4">${datum}</p>
+                </div>
+            `;
+        }
+
+        /**
+         * Filter-Funktion
+         */
+        function filterAnfragen(filter) {
+            aktuellerFilter = filter;
+            
+            // UI Update
+            ['alle', 'offen', 'angenommen', 'abgelehnt'].forEach(f => {
+                const btn = document.getElementById(`filter-${f}`);
+                if (f === filter) {
+                    btn.classList.add('text-blue-600', 'border-blue-600');
+                    btn.classList.remove('text-gray-600', 'border-transparent');
+                } else {
+                    btn.classList.remove('text-blue-600', 'border-blue-600');
+                    btn.classList.add('text-gray-600', 'border-transparent');
+                }
+            });
+            
+            ladeUndZeigeAnfragen();
+        }
+
+        /**
+         * Zeigt Anfrage-Details im Modal
+         */
+        function zeigeAnfrageDetails(anfrageId) {
+            aktuelleAnfrage = holeAnfrage(anfrageId);
+            if (!aktuelleAnfrage) return;
+            
+            // Daten füllen
+            document.getElementById('detail-bande-id').textContent = `${aktuelleAnfrage.bandeId} (${aktuelleAnfrage.position})`;
+            document.getElementById('detail-firma').textContent = aktuelleAnfrage.kundenFirma;
+            document.getElementById('detail-name').textContent = aktuelleAnfrage.kundenName;
+            document.getElementById('detail-email').textContent = aktuelleAnfrage.kundenEmail;
+            document.getElementById('detail-email').href = `mailto:${aktuelleAnfrage.kundenEmail}`;
+            document.getElementById('detail-preis').textContent = `${aktuelleAnfrage.preis} €`;
+            
+            // Design Vorschau
+            const designVorschau = document.getElementById('detail-design-vorschau');
+            const designText = document.getElementById('detail-design-text');
+            designVorschau.style.background = aktuelleAnfrage.designVorschau;
+            designText.textContent = aktuelleAnfrage.kundenFirma;
+            
+            // Nachricht
+            if (aktuelleAnfrage.nachricht) {
+                document.getElementById('detail-nachricht').textContent = aktuelleAnfrage.nachricht;
+                document.getElementById('detail-nachricht-container').classList.remove('hidden');
+            } else {
+                document.getElementById('detail-nachricht-container').classList.add('hidden');
+            }
+            
+            // Zeitstempel
+            const datum = new Date(aktuelleAnfrage.erstelltAm).toLocaleDateString('de-DE', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+            document.getElementById('detail-erstellt').textContent = datum;
+            
+            // Aktionen nur für offene Anfragen
+            if (aktuelleAnfrage.status === 'offen') {
+                document.getElementById('detail-aktionen').classList.remove('hidden');
+                document.getElementById('detail-status-container').classList.add('hidden');
+            } else {
+                document.getElementById('detail-aktionen').classList.add('hidden');
+                const statusBadge = document.getElementById('detail-status-badge');
+                const statusContainer = document.getElementById('detail-status-container');
+                
+                if (aktuelleAnfrage.status === 'angenommen') {
+                    statusBadge.textContent = '✓ Diese Anfrage wurde angenommen';
+                    statusBadge.className = 'text-center py-3 rounded-lg font-semibold bg-green-100 text-green-800';
+                } else {
+                    statusBadge.textContent = '✗ Diese Anfrage wurde abgelehnt';
+                    statusBadge.className = 'text-center py-3 rounded-lg font-semibold bg-red-100 text-red-800';
+                }
+                
+                statusContainer.classList.remove('hidden');
+            }
+            
+            // Modal öffnen
+            document.getElementById('anfrageDetailModal').classList.remove('hidden');
+        }
+
+        /**
+         * Schließt Detail-Modal
+         */
+        function closeDetailModal() {
+            document.getElementById('anfrageDetailModal').classList.add('hidden');
+            aktuelleAnfrage = null;
+        }
+
+        /**
+         * Nimmt Anfrage an
+         */
+        function nehmeAnfrageAn() {
+            if (!aktuelleAnfrage) return;
+            
+            if (confirm(`Möchten Sie die Anfrage von ${aktuelleAnfrage.kundenFirma} für Bande ${aktuelleAnfrage.bandeId} wirklich annehmen?`)) {
+                aktualisiereAnfrageStatus(aktuelleAnfrage.id, 'angenommen');
+                alert('✓ Anfrage wurde angenommen!');
+                closeDetailModal();
+                ladeUndZeigeAnfragen();
+            }
+        }
+
+        /**
+         * Lehnt Anfrage ab
+         */
+        function lehneAnfrageAb() {
+            if (!aktuelleAnfrage) return;
+            
+            if (confirm(`Möchten Sie die Anfrage von ${aktuelleAnfrage.kundenFirma} für Bande ${aktuelleAnfrage.bandeId} wirklich ablehnen?`)) {
+                aktualisiereAnfrageStatus(aktuelleAnfrage.id, 'abgelehnt');
+                alert('✗ Anfrage wurde abgelehnt.');
+                closeDetailModal();
+                ladeUndZeigeAnfragen();
+            }
+        }
+
+        function logout() {
+            localStorage.removeItem('userType');
+            localStorage.removeItem('loggedInUser');
+            window.location.href = 'index.html';
+        }
+
+        function switchPage(pageType) {
+            localStorage.setItem('userType', pageType);
+            if (pageType === 'firma') {
+                window.location.href = 'Bandenseite.html';
+            }
+        }
+
+        function handleMobileNav(value) {
+            if (value === 'logout') {
+                logout();
+            } else if (value === 'firma') {
+                switchPage('firma');
+            } else if (value) {
+                window.location.href = value;
+            }
+        }
+
+        // Initialisierung
+        ladeUndZeigeAnfragen();
+
+        // Auto-Refresh alle 30 Sekunden
+        setInterval(ladeUndZeigeAnfragen, 30000);
+    </script>
+</body>
+</html>
