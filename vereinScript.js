@@ -1,3 +1,8 @@
+// ============================================
+// Verträge Management - Bandenwerbung Manager
+// ============================================
+
+// --- DATEN ---
 const vertraege = [
     { id: 1, name: "GriebelBau", betrag: 800, laufzeit: "24.01.2026", status: "aktiv", kategorie: "Bau" },
     { id: 2, name: "Anwalt Walter", betrag: 1200, laufzeit: "13.09.2026", status: "aktiv", kategorie: "Beratung" },
@@ -6,27 +11,39 @@ const vertraege = [
     { id: 5, name: "IT-Support Solutions", betrag: 950, laufzeit: "30.03.2026", status: "aktiv", kategorie: "IT" }
 ];
 
+// --- STATE ---
 let selectedVertrag = null;
 let currentSort = 'laufzeit';
 let sortOrder = { laufzeit: 'asc', betrag: 'asc' };
 
 // --- HILFSFUNKTIONEN ---
 
-// Hilfsfunktion: Konvertiert "DD.MM.YYYY" in ein Date-Objekt
+/**
+ * Konvertiert "DD.MM.YYYY" in ein Date-Objekt
+ * @param {string} dateString - Datum im Format DD.MM.YYYY
+ * @returns {Date} Date-Objekt
+ */
 function parseDate(dateString) {
     const [day, month, year] = dateString.split('.');
     return new Date(year, month - 1, day);
 }
 
-// Berechne Tage bis Ablaufdatum
+/**
+ * Berechnet verbleibende Tage bis Ablaufdatum
+ * @param {string} laufzeitString - Ablaufdatum als String
+ * @returns {number} Anzahl der verbleibenden Tage
+ */
 function tageRest(laufzeitString) {
     const target = parseDate(laufzeitString);
     const today = new Date();
-    const diff = Math.ceil((target - today) / (1000 * 60 * 60 * 24));
-    return diff;
+    return Math.ceil((target - today) / (1000 * 60 * 60 * 24));
 }
 
-// Bestimme Status-Farben
+/**
+ * Bestimmt Farbklassen basierend auf Status
+ * @param {string} status - Vertragsstatus
+ * @returns {string} Tailwind CSS Klassen
+ */
 function getStatusColor(status) {
     const colors = {
         "aktiv": "bg-green-100 text-green-800",
@@ -38,12 +55,14 @@ function getStatusColor(status) {
 
 // --- KERNFUNKTIONEN ---
 
-// Aktualisiere Stats
+/**
+ * Aktualisiert die Statistik-Anzeige
+ */
 function updateStats() {
     const active = vertraege.filter(v => v.status === 'aktiv').length;
     const total = vertraege.reduce((sum, v) => sum + v.betrag, 0);
     
-    // FEHLER BEHOBEN: Wir nutzen eine Kopie [...] und greifen per Index zu statt .pop()
+    // Sortiere nach Datum und hole das nächste Ablaufdatum
     const sortedByDate = [...vertraege].sort((a, b) => parseDate(a.laufzeit) - parseDate(b.laufzeit));
     const nextRenewal = sortedByDate[0];
     
@@ -52,7 +71,10 @@ function updateStats() {
     document.getElementById('next-renewal').textContent = nextRenewal ? nextRenewal.laufzeit : '-';
 }
 
-// Sortiere Verträge
+/**
+ * Sortiert Verträge nach Typ und aktualisiert UI
+ * @param {string} sortType - 'laufzeit' oder 'betrag'
+ */
 function sortVertraege(sortType) {
     currentSort = sortType;
     const sorted = [...vertraege];
@@ -75,16 +97,15 @@ function sortVertraege(sortType) {
     renderVertraege(sorted);
 }
 
-// Render alle Verträge
+/**
+ * Rendert alle Verträge auf der Seite
+ * @param {Array} contractList - Liste der anzuzeigenden Verträge
+ */
 function renderVertraege(contractList = vertraege) {
     const container = document.querySelector('.category-section');
     if (!container) return;
 
-    container.innerHTML = '';
-
-    contractList.forEach(vertrag => {
-        container.innerHTML += erstelleModerneKarte(vertrag);
-    });
+    container.innerHTML = contractList.map(vertrag => erstelleModerneKarte(vertrag)).join('');
     
     // Event Listener für Karten hinzufügen
     document.querySelectorAll('.contract-card').forEach(card => {
@@ -93,10 +114,12 @@ function renderVertraege(contractList = vertraege) {
         });
     });
     
-    // Stats aktualisieren (nachdem gerendert wurde)
     updateStats();
 }
 
+/**
+ * Aktualisiert den visuellen Zustand der Sortier-Buttons
+ */
 function updateSortButtons() {
     const buttons = {
         laufzeit: document.getElementById('sortLaufzeit'),
@@ -107,19 +130,22 @@ function updateSortButtons() {
         const btn = buttons[key];
         const isActive = currentSort === key;
         
-        btn.classList.toggle('bg-blue-600', isActive);
-        btn.classList.toggle('text-white', isActive);
-        btn.classList.toggle('bg-gray-200', !isActive);
-        btn.classList.toggle('text-gray-700', !isActive);
+        btn.classList.toggle('btn-primary', isActive);
+        btn.classList.toggle('btn-secondary', !isActive);
     });
 }
 
+/**
+ * Erstellt HTML für eine Vertragskarte
+ * @param {Object} vertrag - Vertragsobjekt
+ * @returns {string} HTML-String
+ */
 function erstelleModerneKarte(vertrag) {
     const tage = tageRest(vertrag.laufzeit);
     const daysColor = tage < 30 ? 'text-red-600' : tage < 90 ? 'text-orange-600' : 'text-green-600';
     
     return `
-        <div class="contract-card cursor-pointer bg-white border border-gray-200 rounded-xl p-5 shadow-sm hover:shadow-lg hover:border-blue-300 transition-all duration-200 hover:-translate-y-1" data-id="${vertrag.id}">
+        <div class="card card-clickable contract-card" data-id="${vertrag.id}">
             <div class="flex items-start justify-between mb-4">
                 <div>
                     <h3 class="text-lg font-bold text-gray-900">${vertrag.name}</h3>
@@ -148,8 +174,12 @@ function erstelleModerneKarte(vertrag) {
     `;
 }
 
-// --- MODAL & EVENTS ---
+// --- MODAL FUNKTIONEN ---
 
+/**
+ * Öffnet Modal mit Vertragsdetails
+ * @param {number} id - Vertrags-ID
+ */
 function openModal(id) {
     selectedVertrag = vertraege.find(v => v.id === id);
     if (!selectedVertrag) return;
@@ -166,7 +196,7 @@ function openModal(id) {
     const details = document.getElementById('modal-details');
     details.innerHTML = `
         <div>
-            <p class="text-gray-600 text-sm font-medium">Tage bis Ablauf</p>
+            <p class="stat-label">Tage bis Ablauf</p>
             <p class="text-lg font-bold ${tage < 30 ? 'text-red-600' : tage < 90 ? 'text-orange-600' : 'text-green-600'} mt-1">
                 ${tage > 0 ? tage + ' Tage' : 'Abgelaufen'}
             </p>
@@ -176,15 +206,20 @@ function openModal(id) {
     document.getElementById('detailModal').classList.remove('hidden');
 }
 
+/**
+ * Schließt das Modal
+ */
 function closeModal() {
     document.getElementById('detailModal').classList.add('hidden');
     selectedVertrag = null;
 }
 
+// --- INITIALISIERUNG ---
+
 document.addEventListener('DOMContentLoaded', function() {
-    // Modal-Close Event
+    // Modal-Close Event (Klick außerhalb)
     const modal = document.getElementById('detailModal');
-    if(modal) {
+    if (modal) {
         modal.addEventListener('click', function(e) {
             if (e.target === this) closeModal();
         });
@@ -196,17 +231,26 @@ document.addEventListener('DOMContentLoaded', function() {
     const statsIcon = document.getElementById('statsIcon');
     let statsOpen = true;
     
-    if(statsToggle) {
+    if (statsToggle) {
         statsToggle.addEventListener('click', function() {
             statsOpen = !statsOpen;
             statsContent.classList.toggle('hidden', !statsOpen);
-            statsIcon.style.transform = statsOpen ? 'rotate(0deg)' : 'rotate(180deg)';
+            if (statsIcon) {
+                statsIcon.style.transform = statsOpen ? 'rotate(0deg)' : 'rotate(180deg)';
+            }
         });
     }
     
     // Sorting Buttons Events
-    document.getElementById('sortLaufzeit').addEventListener('click', () => sortVertraege('laufzeit'));
-    document.getElementById('sortBetrag').addEventListener('click', () => sortVertraege('betrag'));
+    const sortLaufzeitBtn = document.getElementById('sortLaufzeit');
+    const sortBetragBtn = document.getElementById('sortBetrag');
+    
+    if (sortLaufzeitBtn) {
+        sortLaufzeitBtn.addEventListener('click', () => sortVertraege('laufzeit'));
+    }
+    if (sortBetragBtn) {
+        sortBetragBtn.addEventListener('click', () => sortVertraege('betrag'));
+    }
     
     // Initialer Aufruf
     sortVertraege('laufzeit');

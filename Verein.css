@@ -1,6 +1,48 @@
-/* Modern Design Setup */
+/* ============================================
+   Bandenwerbung Manager - Globals & Design System
+   ============================================ */
+
+/* CSS Variables für konsistentes Design */
+:root {
+    --color-primary: #3b82f6;
+    --color-primary-dark: #1e40af;
+    --color-primary-light: #93c5fd;
+    
+    --color-secondary: #6366f1;
+    --color-secondary-dark: #4338ca;
+    
+    --color-success: #10b981;
+    --color-warning: #f59e0b;
+    --color-danger: #ef4444;
+    
+    --color-gray-50: #f9fafb;
+    --color-gray-100: #f3f4f6;
+    --color-gray-200: #e5e7eb;
+    --color-gray-300: #d1d5db;
+    --color-gray-600: #4b5563;
+    --color-gray-700: #374151;
+    --color-gray-900: #111827;
+    
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+    
+    --radius-sm: 6px;
+    --radius-md: 8px;
+    --radius-lg: 12px;
+    --radius-xl: 16px;
+    
+    --transition-fast: 150ms ease;
+    --transition-base: 200ms ease;
+    --transition-slow: 300ms ease;
+}
+
+/* Reset & Base Styles */
 * {
     box-sizing: border-box;
+    margin: 0;
+    padding: 0;
 }
 
 body {
@@ -8,53 +50,250 @@ body {
         'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
         sans-serif;
     margin: 0;
-    padding: 1rem;
+    padding: 0;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    background: linear-gradient(to bottom right, var(--color-gray-50), var(--color-gray-100));
+    min-height: 100vh;
 }
 
-#app-container {
-    width: 100%;
+/* ============================================
+   Navigation System
+   ============================================ */
+
+.main-nav {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid rgba(229, 231, 235, 0.5);
+    box-shadow: var(--shadow-sm);
+    margin-bottom: 2rem;
+}
+
+.nav-container {
+    max-width: 80rem;
     margin: 0 auto;
+    padding: 0 1rem;
 }
 
-/* Collapsible Stats Box */
-#statsToggle {
-    cursor: pointer;
+.nav-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    height: 4rem;
 }
 
-#statsToggle:hover {
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+.nav-brand {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 700;
+    font-size: 1.25rem;
+    color: var(--color-gray-900);
+    text-decoration: none;
+    transition: color var(--transition-base);
 }
 
-#statsIcon {
-    transition: transform 0.3s ease;
+.nav-brand:hover {
+    color: var(--color-primary);
 }
 
-#statsContent {
-    transition: all 0.3s ease;
-}
-
-#statsContent.hidden {
+.nav-links {
     display: none;
+    gap: 0.5rem;
 }
 
-/* Smooth transitions */
-.contract-card {
+.nav-link {
+    position: relative;
+    padding: 0.5rem 1rem;
+    color: var(--color-gray-600);
+    font-weight: 500;
+    text-decoration: none;
+    transition: color var(--transition-base);
+}
+
+.nav-link::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--color-primary), var(--color-primary-dark));
+    transition: width var(--transition-slow);
+}
+
+.nav-link:hover {
+    color: var(--color-gray-900);
+}
+
+.nav-link:hover::after,
+.nav-link.active::after {
+    width: 100%;
+}
+
+.nav-link.active {
+    color: var(--color-primary-dark);
+}
+
+.nav-actions {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.user-badge {
+    display: none;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--color-gray-600);
+}
+
+/* ============================================
+   Buttons & Controls
+   ============================================ */
+
+.btn {
+    padding: 0.5rem 1rem;
+    font-weight: 500;
+    border-radius: var(--radius-md);
+    border: none;
     cursor: pointer;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: all var(--transition-base);
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    font-size: 0.875rem;
 }
 
-.contract-card:hover {
+.btn-primary {
+    background: var(--color-primary);
+    color: white;
+}
+
+.btn-primary:hover {
+    background: var(--color-primary-dark);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-md);
+}
+
+.btn-secondary {
+    background: var(--color-gray-200);
+    color: var(--color-gray-700);
+}
+
+.btn-secondary:hover {
+    background: var(--color-gray-300);
+}
+
+.btn-danger {
+    background: var(--color-danger);
+    color: white;
+}
+
+.btn-danger:hover {
+    background: #dc2626;
+}
+
+.btn-success {
+    background: var(--color-success);
+    color: white;
+}
+
+.btn-success:hover {
+    background: #059669;
+}
+
+/* ============================================
+   Cards & Containers
+   ============================================ */
+
+.card {
+    background: white;
+    border: 1px solid var(--color-gray-200);
+    border-radius: var(--radius-xl);
+    padding: 1.5rem;
+    box-shadow: var(--shadow-sm);
+    transition: all var(--transition-slow);
+}
+
+.card:hover {
+    box-shadow: var(--shadow-lg);
+}
+
+.card-clickable {
+    cursor: pointer;
+}
+
+.card-clickable:hover {
     transform: translateY(-4px);
+    border-color: var(--color-primary-light);
 }
 
-/* Modal styles */
-#detailModal {
-    animation: slideIn 0.3s ease-out;
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-top: 1rem;
 }
 
-@keyframes slideIn {
+.stat-card {
+    background: white;
+    border: 1px solid var(--color-gray-200);
+    border-radius: var(--radius-xl);
+    padding: 1.5rem;
+    box-shadow: var(--shadow-sm);
+}
+
+.stat-label {
+    color: var(--color-gray-600);
+    font-size: 0.875rem;
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+}
+
+.stat-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--color-gray-900);
+}
+
+/* ============================================
+   Modal System
+   ============================================ */
+
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+}
+
+.modal-overlay.hidden {
+    display: none !important;
+}
+
+.modal-content {
+    background: white;
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-xl);
+    max-width: 28rem;
+    width: 100%;
+    max-height: 90vh;
+    overflow-y: auto;
+    animation: modalSlideIn var(--transition-slow) ease-out;
+}
+
+@keyframes modalSlideIn {
     from {
         opacity: 0;
         transform: translateY(20px);
@@ -65,52 +304,146 @@ body {
     }
 }
 
-#detailModal.hidden {
+.modal-header {
+    position: sticky;
+    top: 0;
+    background: white;
+    border-bottom: 1px solid var(--color-gray-200);
+    padding: 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: start;
+}
+
+.modal-body {
+    padding: 1.5rem;
+}
+
+.modal-close {
+    color: var(--color-gray-600);
+    font-size: 1.5rem;
+    line-height: 1;
+    background: none;
+    border: none;
+    cursor: pointer;
+    transition: color var(--transition-base);
+}
+
+.modal-close:hover {
+    color: var(--color-gray-900);
+}
+
+/* ============================================
+   Forms & Inputs
+   ============================================ */
+
+.form-input {
+    width: 100%;
+    padding: 0.625rem;
+    border: 1px solid var(--color-gray-300);
+    border-radius: var(--radius-md);
+    font-size: 1rem;
+    transition: all var(--transition-base);
+}
+
+.form-input:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.form-label {
+    display: block;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--color-gray-700);
+    margin-bottom: 0.5rem;
+}
+
+/* ============================================
+   Utilities
+   ============================================ */
+
+.container {
+    width: 100%;
+    max-width: 80rem;
+    margin: 0 auto;
+    padding: 0 1rem;
+}
+
+.container-sm {
+    max-width: 42rem;
+}
+
+.hidden {
     display: none !important;
 }
 
-/* Scrollbar styling */
-#detailModal > div::-webkit-scrollbar {
-    width: 6px;
+.text-center {
+    text-align: center;
 }
 
-#detailModal > div::-webkit-scrollbar-track {
-    background: #f1f1f1;
+.transition-transform {
+    transition: transform var(--transition-base);
 }
 
-#detailModal > div::-webkit-scrollbar-thumb {
-    background: #ccc;
-    border-radius: 3px;
+/* Scrollbar Styling */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
 }
 
-#detailModal > div::-webkit-scrollbar-thumb:hover {
-    background: #999;
+::-webkit-scrollbar-track {
+    background: var(--color-gray-100);
 }
 
-/* Responsive adjustments */
-@media (max-width: 640px) {
-    body {
-        padding: 0.75rem;
+::-webkit-scrollbar-thumb {
+    background: var(--color-gray-300);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--color-gray-600);
+}
+
+/* ============================================
+   Responsive Design
+   ============================================ */
+
+@media (min-width: 640px) {
+    .nav-links {
+        display: flex;
     }
     
-    #app-container {
-        max-width: 100%;
+    .user-badge {
+        display: inline-flex;
     }
 }
 
-@media (min-width: 768px) {
-    body {
-        padding: 2rem;
+@media (max-width: 639px) {
+    .nav-mobile-menu {
+        display: block;
     }
 }
 
-/* Focus states for accessibility */
-button:focus {
-    outline: 2px solid #3b82f6;
+/* ============================================
+   Accessibility
+   ============================================ */
+
+button:focus,
+.card:focus {
+    outline: 2px solid var(--color-primary);
     outline-offset: 2px;
 }
 
-.contract-card:focus {
-    outline: 2px solid #3b82f6;
-    outline-offset: 2px;
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
 }

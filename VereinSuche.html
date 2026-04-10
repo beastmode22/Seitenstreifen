@@ -3,39 +3,152 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vereinssuche</title>
+    <title>Vereinssuche | Bandenwerbung Manager</title>
+    <link rel="stylesheet" href="Verein.css">
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
-        body { background: #f4f4f4; }
-        .container { max-width: 500px; margin: 40px auto; background: #fff; padding: 24px; border-radius: 10px; box-shadow: 0 2px 8px #0001; }
-        .search-input { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; font-size: 1.1em; }
-        .verein-list { margin-top: 24px; }
-        .verein-card { background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px; padding: 16px; margin-bottom: 12px; }
-        .verein-name { font-weight: bold; font-size: 1.1em; }
-        .verein-city { color: #555; font-size: 0.95em; }
+        .verein-card {
+            background: white;
+            border: 1px solid var(--color-gray-200);
+            border-radius: var(--radius-xl);
+            padding: 1rem;
+            margin-bottom: 0.75rem;
+            cursor: pointer;
+            transition: all var(--transition-base);
+        }
+        
+        .verein-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+            border-color: var(--color-primary-light);
+        }
+        
+        .verein-name {
+            font-weight: 600;
+            font-size: 1.1rem;
+            color: var(--color-gray-900);
+            margin-bottom: 0.25rem;
+        }
+        
+        .verein-city {
+            color: var(--color-gray-600);
+            font-size: 0.95rem;
+        }
+        
+        .verein-email {
+            color: var(--color-gray-400);
+            font-size: 0.8rem;
+            margin-top: 0.25rem;
+        }
+        
+        #map {
+            height: 400px;
+            width: 100%;
+            margin-top: 2rem;
+            border-radius: var(--radius-xl);
+            overflow: hidden;
+            border: 1px solid var(--color-gray-200);
+        }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h2 class="text-2xl font-bold mb-6 text-center">Verein oder Stadt suchen</h2>
-        <input id="searchInput" class="search-input" type="text" placeholder="Verein oder Stadt eingeben...">
-        <div id="vereinList" class="verein-list"></div>
-        <div id="map" style="height: 350px; width: 100%; margin-top: 32px; border-radius: 10px; overflow: hidden;"></div>
+
+    <!-- Navigation Bar -->
+    <nav class="main-nav">
+        <div class="nav-container">
+            <div class="nav-content">
+                <div class="flex items-center gap-12">
+                    <a href="Verein.html" class="nav-brand">
+                        <span class="text-2xl">🏟️</span>
+                        <span class="hidden sm:inline">Manager</span>
+                    </a>
+                    <div class="nav-links">
+                        <a href="VereinSuche.html" class="nav-link active">Vereinssuche</a>
+                        <a href="javascript:switchPage('firma')" class="nav-link">Bandenpläne</a>
+                        <a href="Verein.html" class="nav-link">Verträge</a>
+                        <a href="BandeDesign.html" class="nav-link">Design</a>
+                    </div>
+                </div>
+                <div class="nav-actions">
+                    <span class="user-badge">
+                        <span>⚽</span> Verein
+                    </span>
+                    <button onclick="logout()" class="btn btn-danger">
+                        Abmelden
+                    </button>
+                </div>
+                <!-- Mobile Menu -->
+                <div class="sm:hidden">
+                    <select onchange="handleMobileNav(this.value)" class="form-input text-sm">
+                        <option value="">Menü</option>
+                        <option value="VereinSuche.html" selected>Vereinssuche</option>
+                        <option value="Verein.html">Verträge</option>
+                        <option value="firma">Bandenpläne</option>
+                        <option value="BandeDesign.html">Design</option>
+                        <option value="logout">Abmelden</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container container-sm" style="padding-top: 1rem; padding-bottom: 2rem;">
+        <header class="mb-6 text-center">
+            <h1 class="text-3xl font-bold text-gray-900 mb-2">🔍 Vereinssuche</h1>
+            <p class="text-gray-600">Finden Sie Vereine und ihre Bandenpläne</p>
+        </header>
+
+        <div class="card mb-6">
+            <input 
+                id="searchInput" 
+                class="form-input" 
+                type="text" 
+                placeholder="Verein oder Stadt eingeben...">
+        </div>
+
+        <div id="vereinList"></div>
+        
+        <div id="map"></div>
     </div>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
         // Login-Check
         if (!localStorage.getItem('loggedInUser')) {
             window.location.href = 'index.html';
         }
-        // Dummy-Vereine inkl. 3 in Augsburg
+
+        function logout() {
+            localStorage.removeItem('userType');
+            localStorage.removeItem('loggedInUser');
+            window.location.href = 'index.html';
+        }
+
+        function switchPage(pageType) {
+            localStorage.setItem('userType', pageType);
+            if (pageType === 'firma') {
+                window.location.href = 'Bandenseite.html';
+            }
+        }
+
+        function handleMobileNav(value) {
+            if (value === 'logout') {
+                logout();
+            } else if (value === 'firma') {
+                switchPage('firma');
+            } else if (value) {
+                window.location.href = value;
+            }
+        }
+
         // Städte mit Koordinaten
         const staedte = {
             'Augsburg': { lat: 48.366512, lng: 10.894446, zoom: 12 },
             'Nürnberg': { lat: 49.4521, lng: 11.0767, zoom: 12 },
             'München': { lat: 48.1371, lng: 11.5754, zoom: 12 }
         };
+
         // Vereine mit Stadt und Koordinaten
         const vereine = [
             { name: 'FC Augsburg', city: 'Augsburg', email: 'info@fcaugsburg.de', lat: 48.3461, lng: 10.8985 },
@@ -48,40 +161,49 @@
             { name: 'TSV 1860 München', city: 'München', email: 'kontakt@tsv1860.de', lat: 48.1147, lng: 11.5215 },
             { name: 'SV München Süd', city: 'München', email: 'mail@svmsued.de', lat: 48.1025, lng: 11.6012 }
         ];
+
         const searchInput = document.getElementById('searchInput');
         const vereinList = document.getElementById('vereinList');
+
         function renderVereine(list) {
             vereinList.innerHTML = '';
             if (list.length === 0) {
-                vereinList.innerHTML = '<div class="text-gray-500 text-center mt-8">Keine Vereine gefunden.</div>';
+                vereinList.innerHTML = '<div class="text-gray-500 text-center py-8">Keine Vereine gefunden.</div>';
                 return;
             }
             list.forEach(v => {
                 const card = document.createElement('div');
                 card.className = 'verein-card';
-                card.innerHTML = `<div class=\"verein-name\">${v.name}</div><div class=\"verein-city\">${v.city}</div><div class=\"text-xs text-gray-400 mt-1\">${v.email}</div>`;
-                card.style.cursor = 'pointer';
+                card.innerHTML = `
+                    <div class="verein-name">${v.name}</div>
+                    <div class="verein-city">${v.city}</div>
+                    <div class="verein-email">${v.email}</div>
+                `;
                 card.onclick = () => {
                     window.location.href = `Bandenseite.html?verein=${encodeURIComponent(v.name)}`;
                 };
                 vereinList.appendChild(card);
             });
         }
+
         function filterVereine() {
-            const q = searchInput.value.trim().toLowerCase();
-            if (!q) {
+            const query = searchInput.value.trim().toLowerCase();
+            if (!query) {
                 renderVereine([]);
                 updateMap([], null);
                 return;
             }
-            const filtered = vereine.filter(v => v.name.toLowerCase().includes(q) || v.city.toLowerCase().includes(q));
+            const filtered = vereine.filter(v => 
+                v.name.toLowerCase().includes(query) || 
+                v.city.toLowerCase().includes(query)
+            );
             renderVereine(filtered);
-            // Karte zentrieren: auf Verein, dann Stadt, sonst Augsburg
+
+            // Karte zentrieren
             let center = null;
             if (filtered.length === 1 && filtered[0].lat && filtered[0].lng) {
                 center = { lat: filtered[0].lat, lng: filtered[0].lng, zoom: 14 };
             } else if (filtered.length > 0) {
-                // Prüfe, ob alle aus einer Stadt mit Koordinaten
                 const stadt = filtered[0].city;
                 if (staedte[stadt]) {
                     center = staedte[stadt];
@@ -89,17 +211,21 @@
             }
             updateMap(filtered, center);
         }
+
         searchInput.addEventListener('input', filterVereine);
+
         // Leaflet Map
         let map, markers = [];
+
         function initMap() {
-            map = L.map('map').setView([48.366512, 10.894446], 12); // Standard: Augsburg
+            map = L.map('map').setView([48.366512, 10.894446], 12);
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 maxZoom: 18,
                 attribution: '© OpenStreetMap'
             }).addTo(map);
             updateMap(vereine.filter(v => v.city === 'Augsburg'), staedte['Augsburg']);
         }
+
         function updateMap(list, center) {
             markers.forEach(m => map.removeLayer(m));
             markers = [];
@@ -115,6 +241,7 @@
                 map.setView([center.lat, center.lng], center.zoom || 12);
             }
         }
+
         window.onload = initMap;
     </script>
 </body>

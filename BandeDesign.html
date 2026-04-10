@@ -3,44 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bandendesign Creator</title>
+    <title>Bandendesign Creator | Bandenwerbung Manager</title>
+    <link rel="stylesheet" href="Verein.css">
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        .nav-link {
-            position: relative;
-            padding: 0.5rem 1rem;
-            color: #6b7280;
-            font-weight: 500;
-            transition: color 0.3s ease;
-            text-decoration: none;
-        }
-        
-        .nav-link::after {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 0;
-            height: 3px;
-            background: linear-gradient(90deg, #3b82f6, #1e40af);
-            transition: width 0.3s ease;
-        }
-        
-        .nav-link:hover {
-            color: #1f2937;
-        }
-        
-        .nav-link:hover::after {
-            width: 100%;
-        }
-        
-        .nav-link.active {
-            color: #1e40af;
-        }
-        
-        .nav-link.active::after {
-            width: 100%;
-        }
 
         .band-preview {
             height: 120px;
@@ -134,52 +100,60 @@
         }
     </style>
 </head>
-<body class="bg-gradient-to-br from-gray-50 to-gray-100 min-h-screen">
+<body>
 
     <!-- Navigation Bar -->
-    <nav class="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-200/50 shadow-sm">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between items-center h-16">
+    <nav class="main-nav">
+        <div class="nav-container">
+            <div class="nav-content">
                 <div class="flex items-center gap-12">
-                    <a href="Bandenseite.html" class="flex items-center gap-2 font-bold text-xl text-gray-900 hover:text-blue-600 transition-colors">
+                    <a href="Verein.html" class="nav-brand">
                         <span class="text-2xl">🏟️</span>
                         <span class="hidden sm:inline">Manager</span>
                     </a>
-                    <div class="hidden sm:flex gap-2">
+                    <div class="nav-links">
+                        <a href="VereinSuche.html" class="nav-link">Vereinssuche</a>
                         <a href="javascript:switchPage('firma')" class="nav-link">Bandenpläne</a>
                         <a href="javascript:switchPage('verein')" class="nav-link">Verträge</a>
                         <a href="BandeDesign.html" class="nav-link active">Design</a>
                     </div>
                 </div>
-                <div class="flex items-center gap-4">
-                    <span id="userTypeDisplay" class="hidden sm:inline text-sm font-medium text-gray-600">
-                        <span class="text-lg">🎨</span> Design Creator
+                <div class="nav-actions">
+                    <span class="user-badge">
+                        <span>🎨</span> Design Creator
                     </span>
-                    <button onclick="logout()" class="px-4 py-2 bg-red-600 text-white rounded-lg font-medium hover:bg-red-700 transition-colors text-sm">
+                    <button onclick="logout()" class="btn btn-danger">
                         Abmelden
                     </button>
                 </div>
+                <!-- Mobile Menu -->
                 <div class="sm:hidden">
-                    <select onchange="if(this.value === 'logout') { logout(); } else { switchPage(this.value); }" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-700 bg-white border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                        <option value="">Design</option>
+                    <select onchange="handleMobileNav(this.value)" class="form-input text-sm">
+                        <option value="">Menü</option>
+                        <option value="VereinSuche.html">Vereinssuche</option>
                         <option value="firma">Bandenpläne</option>
                         <option value="verein">Verträge</option>
+                        <option value="BandeDesign.html" selected>Design</option>
                         <option value="logout">Abmelden</option>
                     </select>
                 </div>
             </div>
         </div>
-        <div class="flex justify-center mt-8">
-            <button id="sendDesignBtn" class="px-6 py-3 bg-blue-600 text-white rounded-lg font-bold text-lg hover:bg-blue-700 transition-colors">Design abschicken</button>
-        </div>
     </nav>
 
-    <div class="max-w-7xl mx-auto py-6 px-4 sm:py-8 sm:px-6">
+    <div class="container" style="padding-top: 1rem; padding-bottom: 2rem;">
         <!-- Header -->
-        <div class="mb-8">
+        <header class="mb-8">
             <h1 class="text-4xl font-bold text-gray-900 mb-2">🎨 Bandendesign Creator</h1>
             <div id="designInfo" class="text-base text-gray-700 mb-2"></div>
             <p class="text-gray-600">Erstellen Sie Ihr individuelles Bandendesign mit Logo und Farben</p>
+        </header>
+
+        <!-- Design absenden Button -->
+        <div class="mb-6 text-center">
+            <button id="sendDesignBtn" class="btn btn-success px-8 py-3 text-lg">
+                ✓ Design abschicken
+            </button>
         </div>
 
         <!-- Main Content -->
@@ -187,7 +161,7 @@
             <!-- Konfiguration Panel -->
             <div class="lg:col-span-1">
                 <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 sticky top-24">
-                    <h2 class="text-xl font-bold text-gray-900 mb-6">Design konfigurieren</h2>
+                    <h2 class="text-xl font-bold text-gray-900 mb-6">⚙️ Design konfigurieren</h2>
                     
                     <!-- Logo Upload -->
                     <div class="mb-6">
@@ -196,10 +170,10 @@
                             <span class="text-gray-400 text-sm text-center px-2">Klicken zum Hochladen</span>
                         </div>
                         <input type="file" id="logoInput" accept="image/*" class="hidden" onchange="handleLogoUpload(event)">
-                        <button onclick="document.getElementById('logoInput').click()" class="mt-3 w-full px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors text-sm">
+                        <button onclick="document.getElementById('logoInput').click()" class="mt-3 w-full btn btn-primary text-sm">
                             📤 Logo wählen
                         </button>
-                        <button onclick="clearLogo()" class="mt-2 w-full px-4 py-2 bg-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-300 transition-colors text-sm">
+                        <button onclick="clearLogo()" class="mt-2 w-full btn btn-secondary text-sm">
                             ✕ Logo löschen
                         </button>
                     </div>
@@ -353,6 +327,18 @@
                 window.location.href = 'Verein.html';
             } else if (pageType === 'firma') {
                 window.location.href = 'Bandenseite.html';
+            }
+        }
+
+        function handleMobileNav(value) {
+            if (value === 'logout') {
+                logout();
+            } else if (value === 'firma') {
+                switchPage('firma');
+            } else if (value === 'verein') {
+                switchPage('verein');
+            } else if (value) {
+                window.location.href = value;
             }
         }
     </script>
