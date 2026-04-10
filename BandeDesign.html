@@ -291,38 +291,138 @@
         </div>
     </div>
 
+    <script src="anfrageSystem.js"></script>
     <script src="bandeDesignScript.js"></script>
     <script>
         // Login-Check: Weiterleitung, falls nicht eingeloggt
         if (!localStorage.getItem('loggedInUser')) {
             window.location.href = 'index.html';
         }
+        
         // Zeige Vereinsname und Bande/Seite an
         function getQueryParam(name) {
             const params = new URLSearchParams(window.location.search);
             return params.get(name) || '';
         }
+        
         const verein = getQueryParam('verein');
         const bande = getQueryParam('bande');
         const seite = getQueryParam('seite');
+        const istAnfrage = getQueryParam('anfrage') === 'true';
+        
         if (verein || bande || seite) {
             document.getElementById('designInfo').textContent =
                 `Für Verein: ${verein ? verein : '-'}${bande ? ' | Bande: ' + bande : ''}${seite ? ' | Seite: ' + seite : ''}`;
         }
+        
+        // Anfrage-Flow: Info-Banner anzeigen
+        if (istAnfrage) {
+            const infoBox = document.createElement('div');
+            infoBox.className = 'bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6';
+            infoBox.innerHTML = `
+                <div class="flex items-start">
+                    <svg class="w-5 h-5 text-blue-600 mr-3 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
+                    </svg>
+                    <div>
+                        <h3 class="text-sm font-semibold text-blue-900">Anfrage-Modus</h3>
+                        <p class="text-sm text-blue-700 mt-1">Sie erstellen gerade ein Design für Ihre Bandenwerbungs-Anfrage. Nach Abschluss wird die Anfrage an den Verein gesendet.</p>
+                    </div>
+                </div>
+            `;
+            document.querySelector('.container').insertBefore(infoBox, document.querySelector('.container').firstChild);
+            
+            // Button-Text ändern
+            document.getElementById('sendDesignBtn').textContent = 'Anfrage mit Design absenden';
+            
+            // Firmenname aus Anfrage-Entwurf vorausfüllen
+            const entwurfJSON = sessionStorage.getItem('anfrageEntwurf');
+            if (entwurfJSON) {
+                const entwurf = JSON.parse(entwurfJSON);
+                const companyNameInput = document.getElementById('companyName');
+                if (companyNameInput && entwurf.kundenFirma) {
+                    companyNameInput.value = entwurf.kundenFirma;
+                    // Design neu rendern mit vorausgefülltem Namen
+                    updateDesigns();
+                }
+            }
+        }
+        
         // Design abschicken Button
         document.getElementById('sendDesignBtn').onclick = function() {
-            // Verein, Bande, Seite an Foto.html weitergeben
-            const params = [];
-            if (verein) params.push('verein=' + encodeURIComponent(verein));
-            if (bande) params.push('bande=' + encodeURIComponent(bande));
-            if (seite) params.push('seite=' + encodeURIComponent(seite));
-            window.location.href = 'Foto.html' + (params.length ? '?' + params.join('&') : '');
+            // Prüfen, ob wir im Anfrage-Modus sind
+            if (istAnfrage) {
+                handleAnfrageAbschluss();
+            } else {
+                // Normaler Modus: Weiter zu Foto.html
+                const params = [];
+                if (verein) params.push('verein=' + encodeURIComponent(verein));
+                if (bande) params.push('bande=' + encodeURIComponent(bande));
+                if (seite) params.push('seite=' + encodeURIComponent(seite));
+                window.location.href = 'Foto.html' + (params.length ? '?' + params.join('&') : '');
+            }
         };
+        
+        /**
+         * Schließt die Anfrage mit dem erstellten Design ab
+         */
+        function handleAnfrageAbschluss() {
+            // Prüfen, ob ein Design ausgewählt wurde
+            if (!selectedDesign) {
+                alert('Bitte wählen Sie zuerst ein Design aus.');
+                return;
+            }
+            
+            // Anfrage-Entwurf aus sessionStorage laden
+            const entwurfJSON = sessionStorage.getItem('anfrageEntwurf');
+            if (!entwurfJSON) {
+                alert('Fehler: Anfrage-Daten wurden nicht gefunden. Bitte starten Sie den Prozess erneut.');
+                window.location.href = 'Bandenseite.html';
+                return;
+            }
+            
+            const anfrageEntwurf = JSON.parse(entwurfJSON);
+            
+            // Design-Vorschau generieren (vereinfacht)
+            const primaryColor = document.getElementById('primaryColor')?.value || '#3b82f6';
+            const accentColor = document.getElementById('accentColor')?.value || '#ffffff';
+            const companyName = document.getElementById('companyName')?.value || anfrageEntwurf.kundenFirma || '';
+            const secondaryText = document.getElementById('secondaryText')?.value || '';
+            
+            // Design-Daten zusammenstellen
+            const designData = {
+                id: selectedDesign,
+                primaryColor: primaryColor,
+                accentColor: accentColor,
+                companyName: companyName,
+                secondaryText: secondaryText,
+                logo: uploadedLogo || null
+            };
+            
+            // Anfrage komplettieren
+            anfrageEntwurf.designId = selectedDesign;
+            anfrageEntwurf.designVorschau = `linear-gradient(135deg, ${primaryColor} 0%, ${primaryColor} 100%)`;
+            anfrageEntwurf.designData = JSON.stringify(designData);
+            
+            // Anfrage erstellen
+            const neueAnfrage = erstelleAnfrage(anfrageEntwurf);
+            
+            // sessionStorage aufräumen
+            sessionStorage.removeItem('anfrageEntwurf');
+            
+            // Erfolgsbestätigung
+            alert(`✓ Anfrage erfolgreich gesendet!\n\nIhre Anfrage für Bande ${neueAnfrage.bandeId} wurde mit dem Design "${selectedDesign}" an ${neueAnfrage.verein} gesendet.\n\nDer Verein wird Ihre Anfrage prüfen und sich bei Ihnen melden.`);
+            
+            // Zurück zur Bandenseite
+            window.location.href = 'Bandenseite.html?verein=' + encodeURIComponent(verein);
+        }
+        
         function logout() {
             localStorage.removeItem('userType');
             localStorage.removeItem('loggedInUser');
             window.location.href = 'index.html';
         }
+        
         function switchPage(pageType) {
             localStorage.setItem('userType', pageType);
             if (pageType === 'verein') {

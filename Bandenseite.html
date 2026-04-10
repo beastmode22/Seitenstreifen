@@ -254,13 +254,14 @@
             </div>
             
             <div class="modal-body space-y-6">
-                <!-- Schritt 1: Kontaktdaten -->
-                <div id="anfrage-step-1">
+                <!-- Anfrage-Formular -->
+                <div id="anfrage-formular">
                     <h3 class="text-lg font-semibold text-gray-900 mb-4">📋 Ihre Kontaktdaten</h3>
                     <div class="space-y-4">
                         <div>
                             <label class="form-label">Firmenname</label>
-                            <input type="text" id="anfrage-firma" class="form-input" placeholder="Ihre Firma GmbH" required>
+                            <input type="text" id="anfrage-firma" class="form-input" placeholder="Ihre Firma GmbH" required readonly>
+                            <p class="text-xs text-gray-500 mt-1">Automatisch ausgefüllt aus Ihrem Profil</p>
                         </div>
                         <div>
                             <label class="form-label">Ansprechpartner</label>
@@ -275,40 +276,28 @@
                             <textarea id="anfrage-nachricht" class="form-input" rows="3" placeholder="Zusätzliche Informationen..."></textarea>
                         </div>
                     </div>
-                    <div class="mt-6">
-                        <button onclick="naechsterSchritt()" class="btn btn-primary w-full">
-                            Weiter zum Design →
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Schritt 2: Design-Auswahl -->
-                <div id="anfrage-step-2" class="hidden">
-                    <div class="flex items-center justify-between mb-4">
-                        <h3 class="text-lg font-semibold text-gray-900">🎨 Design wählen</h3>
-                        <button onclick="zurueckZuSchritt1()" class="text-sm text-blue-600 hover:text-blue-700">← Zurück</button>
-                    </div>
                     
-                    <div class="grid grid-cols-2 gap-4 mb-6">
-                        <!-- Design-Vorlagen werden hier eingefügt -->
-                    </div>
-                    
-                    <div id="design-vorschau" class="hidden mb-6">
-                        <p class="text-sm font-medium text-gray-700 mb-2">Ausgewähltes Design:</p>
-                        <div id="design-vorschau-box" class="h-32 rounded-lg border-2 border-gray-300 flex items-center justify-center">
-                            <p id="design-vorschau-text" class="text-lg font-bold text-white"></p>
+                    <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mt-6 mb-6">
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm font-medium text-blue-900">Preis pro Saison:</span>
+                            <span id="anfrage-preis-anzeige" class="text-2xl font-bold text-blue-600">0 €</span>
                         </div>
                     </div>
                     
-                    <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
-                        <p class="text-sm text-blue-800">
-                            <strong>Preis:</strong> <span id="anfrage-preis-anzeige" class="font-bold">0</span> € pro Saison
+                    <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
+                        <p class="text-sm text-yellow-800 mb-2">
+                            <strong>ℹ️ Nächster Schritt:</strong>
+                        </p>
+                        <p class="text-sm text-yellow-700">
+                            Nach dem Absenden werden Sie zum Design-Creator weitergeleitet, um Ihr individuelles Bandendesign zu erstellen.
                         </p>
                     </div>
                     
                     <div class="flex gap-3">
                         <button onclick="closeAnfrageModal()" class="btn btn-secondary flex-1">Abbrechen</button>
-                        <button onclick="anfrageAbsenden()" class="btn btn-success flex-1">✓ Anfrage senden</button>
+                        <button onclick="anfrageErstellenUndZumDesign()" class="btn btn-primary flex-1">
+                            Weiter zum Design →
+                        </button>
                     </div>
                 </div>
             </div>
@@ -339,31 +328,27 @@
         // --- ANFRAGE MODAL FUNKTIONEN ---
 
         let aktuelleAnfrageBande = null;
-        let ausgewaehlteDesignId = null;
 
         /**
          * Öffnet das Anfrage-Modal für eine freie Bande
          */
         function oeffneAnfrageModal(bandeId, position, preis) {
             aktuelleAnfrageBande = { id: bandeId, position: position, preis: preis };
-            ausgewaehlteDesignId = null;
             
-            // Reset Formular
-            document.getElementById('anfrage-firma').value = '';
-            document.getElementById('anfrage-name').value = '';
-            document.getElementById('anfrage-email').value = '';
+            // Firmenname automatisch aus Login-Daten ausfüllen
+            const user = JSON.parse(localStorage.getItem('loggedInUser') || '{}');
+            document.getElementById('anfrage-firma').value = user.name || '';
+            
+            // Name und Email vorausfüllen falls verfügbar
+            document.getElementById('anfrage-name').value = user.name || '';
+            document.getElementById('anfrage-email').value = user.email || '';
             document.getElementById('anfrage-nachricht').value = '';
             
             // Banden-Info anzeigen
             document.getElementById('anfrage-bande-id').textContent = `${bandeId} (${position})`;
-            document.getElementById('anfrage-preis-anzeige').textContent = preis || '0';
             
-            // Zeige Schritt 1
-            document.getElementById('anfrage-step-1').classList.remove('hidden');
-            document.getElementById('anfrage-step-2').classList.add('hidden');
-            
-            // Rendere Design-Vorlagen
-            rendereDesignVorlagen();
+            // Preis anzeigen (vom Verein gesetzt)
+            document.getElementById('anfrage-preis-anzeige').textContent = preis > 0 ? `${preis} €` : 'Preis auf Anfrage';
             
             // Modal öffnen
             document.getElementById('anfrageModal').classList.remove('hidden');
@@ -375,13 +360,12 @@
         function closeAnfrageModal() {
             document.getElementById('anfrageModal').classList.add('hidden');
             aktuelleAnfrageBande = null;
-            ausgewaehlteDesignId = null;
         }
 
         /**
-         * Wechselt zu Schritt 2 (Design-Auswahl)
+         * Erstellt Anfrage und leitet zum Design-Creator weiter
          */
-        function naechsterSchritt() {
+        function anfrageErstellenUndZumDesign() {
             // Validierung
             const firma = document.getElementById('anfrage-firma').value.trim();
             const name = document.getElementById('anfrage-name').value.trim();
@@ -397,107 +381,31 @@
                 return;
             }
             
-            // Zu Schritt 2 wechseln
-            document.getElementById('anfrage-step-1').classList.add('hidden');
-            document.getElementById('anfrage-step-2').classList.remove('hidden');
-        }
-
-        /**
-         * Zurück zu Schritt 1
-         */
-        function zurueckZuSchritt1() {
-            document.getElementById('anfrage-step-2').classList.add('hidden');
-            document.getElementById('anfrage-step-1').classList.remove('hidden');
-        }
-
-        /**
-         * Rendert die Design-Vorlagen
-         */
-        function rendereDesignVorlagen() {
-            const container = document.querySelector('#anfrage-step-2 .grid');
-            if (!container) return;
-            
-            container.innerHTML = '';
-            
-            const designs = alleDesignVorlagen();
-            designs.forEach(design => {
-                const card = document.createElement('div');
-                card.className = 'cursor-pointer border-2 border-gray-200 rounded-lg p-4 hover:border-blue-500 transition-all';
-                card.onclick = () => waehleDesign(design.id);
-                
-                card.innerHTML = `
-                    <div class="h-24 rounded-md mb-2" style="background: ${design.vorschau}"></div>
-                    <p class="font-semibold text-sm text-gray-900">${design.name}</p>
-                    <p class="text-xs text-gray-500 mt-1">${design.beschreibung}</p>
-                `;
-                
-                container.appendChild(card);
-            });
-        }
-
-        /**
-         * Wählt ein Design aus
-         */
-        function waehleDesign(designId) {
-            ausgewaehlteDesignId = designId;
-            const design = holeDesignVorlage(designId);
-            
-            if (!design) return;
-            
-            // Markiere ausgewähltes Design
-            const cards = document.querySelectorAll('#anfrage-step-2 .grid > div');
-            cards.forEach((card, idx) => {
-                if (idx + 1 === designId) {
-                    card.classList.add('border-blue-500', 'bg-blue-50');
-                } else {
-                    card.classList.remove('border-blue-500', 'bg-blue-50');
-                }
-            });
-            
-            // Zeige Vorschau
-            const vorschauBox = document.getElementById('design-vorschau-box');
-            const vorschauText = document.getElementById('design-vorschau-text');
-            
-            vorschauBox.style.background = design.vorschau;
-            vorschauText.textContent = document.getElementById('anfrage-firma').value || 'Ihre Firma';
-            
-            document.getElementById('design-vorschau').classList.remove('hidden');
-        }
-
-        /**
-         * Sendet die Anfrage ab
-         */
-        function anfrageAbsenden() {
-            if (!ausgewaehlteDesignId) {
-                alert('Bitte wählen Sie ein Design aus.');
-                return;
-            }
-            
             if (!aktuelleAnfrageBande) {
                 alert('Fehler: Keine Bande ausgewählt.');
                 return;
             }
             
+            // Anfrage-Daten erstellen (Entwurf)
             const anfrageData = {
                 verein: getVereinsName(),
                 bandeId: aktuelleAnfrageBande.id,
                 position: aktuelleAnfrageBande.position,
-                kundenFirma: document.getElementById('anfrage-firma').value.trim(),
-                kundenName: document.getElementById('anfrage-name').value.trim(),
-                kundenEmail: document.getElementById('anfrage-email').value.trim(),
+                kundenFirma: firma,
+                kundenName: name,
+                kundenEmail: email,
                 nachricht: document.getElementById('anfrage-nachricht').value.trim(),
-                designId: ausgewaehlteDesignId,
-                designVorschau: holeDesignVorlage(ausgewaehlteDesignId).vorschau,
-                preis: aktuelleAnfrageBande.preis || 0
+                preis: aktuelleAnfrageBande.preis || 0,
+                designId: null,  // Wird später vom Design-Creator gesetzt
+                designVorschau: ''
             };
             
-            // Anfrage erstellen
-            const neueAnfrage = erstelleAnfrage(anfrageData);
+            // Speichere Entwurf temporär
+            sessionStorage.setItem('anfrageEntwurf', JSON.stringify(anfrageData));
             
-            // Erfolg anzeigen
-            alert(`✓ Anfrage erfolgreich gesendet!\n\nIhre Anfrage für Bande ${neueAnfrage.bandeId} wurde an ${neueAnfrage.verein} gesendet und wird in Kürze bearbeitet.`);
-            
-            closeAnfrageModal();
+            // Weiterleitung zum Design-Creator
+            const verein = getVereinsName();
+            window.location.href = `BandeDesign.html?verein=${encodeURIComponent(verein)}&bande=${encodeURIComponent(aktuelleAnfrageBande.id)}&seite=${encodeURIComponent(aktuelleAnfrageBande.position)}&anfrage=true`;
         }
 
         // Bande-Klick-Handler wird nur für Kunden verwendet
